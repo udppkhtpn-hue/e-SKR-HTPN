@@ -7,15 +7,13 @@ A web form where each HTPN department enters its **estimated monthly referral ca
 
 ## How the data flows
 
-1. A department representative chooses their department. The form then shows only the DRGs whose "Kepakaran Terlibat" includes that department. They can switch to all 31 DRGs.
-2. They enter raw numbers (cases per month), review them, and submit.
+1. **01 / Pilih Jabatan:** the head of department picks their department or specialty from a dropdown. The list matches the "Kepakaran Terlibat" column of the KKM table.
+2. **03 / Anggaran Kes:** only the DRGs for that specialty are shown (for example, 13 for Perubatan Am and 5 for O&G). They enter raw numbers (cases per month), review them, and submit. Numbers are kept separately for each department, and only the chosen department's DRGs are sent.
 3. Apps Script appends one row per DRG to **`Respons`**, the audit log.
 4. It then rebuilds **`Format KKM`**, an exact copy of the KKM template. Column L (*Hospital Tengku Permaisuri Norashikin, Kajang.*) holds the sum of all active submissions. This has been checked cell by cell against `Bil. Kes SKR Hospital KKM - Sheet1.csv` with zero differences.
 5. **`Pecahan Jabatan`** shows the DRG × department breakdown and the list of active submissions.
 
 **Resubmission rule.** A new submission from the same department replaces that department's previous one: the old rows are marked `DIGANTI` and only `AKTIF` rows are counted.
-
-> ⚠️ Don't mix a "Keseluruhan Hospital (HIO)" submission with departmental submissions for the same DRGs. Both are summed, so the cases would be counted twice.
 
 ## Setup (about 10 minutes)
 

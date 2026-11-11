@@ -142,18 +142,18 @@
         .stat:nth-child(2) { transform: rotate(1deg) translateY(-6px); }
         .stat:nth-child(3) { transform: rotate(-.6deg); }
 
+        /* 01 / Department picker */
+        .dept-card { margin-top: 48px; background: var(--paper-2); }
+        .dept-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 28px; align-items: center; margin-top: 6px; }
+        .dept-select { font-family: var(--display); font-weight: 800; font-size: 18px; padding: 14px 12px; background: var(--field); box-shadow: 6px 6px 0 var(--ink); cursor: pointer; }
+        .dept-info { margin: 14px 0 0; font-size: 12px; min-height: 24px; }
+        @media (max-width: 768px) { .dept-grid { grid-template-columns: 1fr; gap: 16px; } .dept-select { font-size: 16px; } }
+
         /* Layout: profile + entries */
         .form-grid { display: grid; grid-template-columns: 340px 1fr; gap: 40px; margin-top: 48px; align-items: start; }
         .profile-card { transform: rotate(-.6deg); position: sticky; top: 16px; }
         .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        /* DRG toolbar */
-        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
-        .seg { display: inline-flex; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
-        .seg button { border: 0; background: #fff; padding: 8px 12px; font-family: var(--display); font-weight: 800; font-size: 11px; text-transform: uppercase; cursor: pointer; }
-        .seg button + button { border-left: 3px solid var(--ink); }
-        .seg button.is-active { background: var(--ink); color: var(--yellow); }
-        .toolbar .search { flex: 1; min-width: 180px; }
 
         /* DRG rows */
         .drg-list { border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); background: #fff; }
@@ -344,24 +344,32 @@
                 </div>
             </div>
 
+            <!-- 01 / Department picker -->
+            <div class="card dept-card reveal">
+                <span class="ribbon yellow" data-i18n="ribbon01"></span>
+                <div class="dept-grid">
+                    <div>
+                        <h3 class="h-display" style="font-size:22px"><i class="fas fa-hospital" style="color:var(--red)"></i> <span data-i18n="deptTitle"></span></h3>
+                        <p class="small" data-i18n="deptSub"></p>
+                    </div>
+                    <div>
+                        <label class="field-label" for="p_dept" data-i18n="dept"></label>
+                        <select id="p_dept" class="field dept-select" onchange="onDeptChange()"></select>
+                        <p id="dept_info" class="dept-info"></p>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-grid">
 
-                <!-- 01 / Profile -->
+                <!-- 02 / Profile -->
                 <div class="card profile-card reveal">
-                    <span class="ribbon yellow" data-i18n="ribbon01"></span>
+                    <span class="ribbon blue" data-i18n="ribbon02p"></span>
                     <div class="card-head">
                         <h3 class="h-display" style="font-size:18px"><i class="fas fa-user-doctor" style="color:var(--red)"></i> <span data-i18n="profileTitle"></span></h3>
                         <p class="small" data-i18n="profileSub"></p>
                     </div>
                     <div class="stack">
-                        <div>
-                            <label class="field-label" for="p_dept"><i class="fas fa-hospital"></i> <span data-i18n="dept"></span></label>
-                            <select id="p_dept" class="field" onchange="onDeptChange()"></select>
-                        </div>
-                        <div id="p_dept_other_wrap" hidden>
-                            <label class="field-label" for="p_dept_other" data-i18n="deptOther"></label>
-                            <input id="p_dept_other" class="field" maxlength="80" data-i18n-ph="deptOtherPh" oninput="saveDraft()">
-                        </div>
                         <div>
                             <label class="field-label" for="p_name"><i class="fas fa-id-badge"></i> <span data-i18n="name"></span></label>
                             <input id="p_name" class="field" maxlength="120" autocomplete="name" data-i18n-ph="namePh" oninput="saveDraft()">
@@ -389,14 +397,6 @@
                     <div class="card-head" style="position:relative">
                         <h3 class="h-display" style="font-size:18px" data-i18n="drgTitle"></h3>
                         <p class="small" data-i18n="drgSub"></p>
-                    </div>
-
-                    <div class="toolbar">
-                        <div class="seg" role="group">
-                            <button id="f_mine" class="is-active" onclick="setFilter('mine')" data-i18n="filterMine"></button>
-                            <button id="f_all" onclick="setFilter('all')" data-i18n="filterAll"></button>
-                        </div>
-                        <input id="drg_search" class="field search" type="search" data-i18n-ph="searchPh" oninput="renderDrgList()">
                     </div>
 
                     <div class="drg-list" id="drg_list"></div>
@@ -564,9 +564,7 @@
         { v: "Obstetrik & Ginekologi", match: ["Obstetrik & Ginekologi"] },
         { v: "Pediatrik", match: ["Pediatrik", "Pediatrik Am"] },
         { v: "Otorinolaringologi", match: ["Otorinolaringologi"] },
-        { v: "Urologi", match: ["Urologi"] },
-        { v: "Keseluruhan Hospital (HIO / Pentadbiran)", match: "ALL", key: "deptAll" },
-        { v: "Lain-lain", match: [], key: "deptOtherOpt" }
+        { v: "Urologi", match: ["Urologi"] }
     ];
 
     // ================= Translations =================
@@ -581,32 +579,33 @@
             introBody: "BPP KKM memohon anggaran bilangan kes rujukan SETIAP BULAN dari HTPN ke Hospital Pengajar Universiti Awam (HPUA) bagi 31 Diagnosis Related Group (DRG) yang disenarai pendek untuk SKR Fasa 1. Isikan angka mentah jabatan anda — portal akan menjumlahkan semua jabatan terus ke dalam format Google Sheets KKM.",
             daysLeft: "Hari lagi",
             howTitle: "Cara mengisi:",
-            howBody: " (1) Pilih jabatan &amp; isi maklumat anda. (2) Masukkan <b>anggaran bilangan kes sebulan</b> bagi setiap DRG yang dirujuk jabatan anda. Biarkan kosong jika tiada. (3) Semak &amp; hantar. Serahan baharu daripada jabatan yang sama akan <b>menggantikan</b> serahan terdahulu. Tarikh akhir: <b>20 November 2026 (Jumaat)</b>.",
-            ribbon01: "01 / Maklumat Pengisi",
+            howBody: " (1) Pilih jabatan anda — hanya DRG jabatan tersebut akan dipaparkan. (2) Isi maklumat anda &amp; masukkan <b>anggaran bilangan kes sebulan</b> bagi setiap DRG yang dirujuk jabatan anda. Biarkan kosong jika tiada. (3) Semak &amp; hantar. Serahan baharu daripada jabatan yang sama akan <b>menggantikan</b> serahan terdahulu. Tarikh akhir: <b>20 November 2026 (Jumaat)</b>.",
+            ribbon01: "01 / Pilih Jabatan",
+            deptTitle: "Pilih Jabatan Anda",
+            deptSub: "Senarai DRG di bawah akan dipaparkan mengikut kepakaran jabatan yang dipilih (lajur \"Kepakaran Terlibat\" dalam jadual KKM). Isi DRG jabatan anda sahaja.",
+            deptInfo: "dipaparkan untuk jabatan ini di kotak 03.",
+            deptPick: "pilih jabatan dahulu ↓",
+            ribbon02p: "02 / Maklumat Pengisi",
             profileTitle: "Maklumat Pengisi",
             profileSub: "Seorang wakil bagi setiap jabatan / unit.",
-            dept: "Jabatan / Unit", deptOther: "Nyatakan jabatan / unit", deptOtherPh: "Cth: Unit Rawatan Rapi",
+            dept: "Jabatan / Kepakaran",
             deptSelect: "— Pilih jabatan —",
-            deptAll: "Keseluruhan Hospital (HIO / Pentadbiran)", deptOtherOpt: "Lain-lain (nyatakan)",
             name: "Nama Penuh", namePh: "Dr. Nama Pegawai",
             post: "Jawatan", postPh: "Cth: Pakar Perubatan UD54 / KJ",
             email: "E-mel Rasmi", phone: "No. Telefon", optional: "(pilihan)",
             scribble1: "isi & semak ✓",
-            ribbon02: "02 / Anggaran Kes Sebulan",
+            ribbon02: "03 / Anggaran Kes Sebulan",
             drgTitle: "Anggaran Bilangan Kes Rujukan (Setiap Bulan)",
             drgSub: "Angka mentah anggaran kes sebulan yang akan dirujuk dari HTPN ke HPUA. Nombor bulat sahaja.",
-            filterMine: "DRG Jabatan Saya", filterAll: "Semua 31 DRG",
-            searchPh: "Cari DRG / kepakaran…",
             thDrg: "Diagnosis Related Group (DRG) · Kepakaran Terlibat", thEst: "Kes / Bulan",
-            pickDept: "Pilih jabatan anda di kotak 01 untuk melihat DRG yang berkaitan, atau tekan \"Semua 31 DRG\".",
-            noMatch: "Tiada DRG sepadan.",
+            pickDept: "Pilih jabatan anda di kotak 01 — DRG jabatan anda akan dipaparkan di sini.",
             notes: "Catatan", notesPh: "Cth: anggaran berdasarkan data rujukan Jan–Okt 2026",
             tFilled: "DRG diisi", tTotal: "Jumlah kes / bulan",
             resetBtn: "Kosongkan", reviewBtn: "Semak & Hantar",
             reviewChip: "Serahan Rasmi", reviewTitle: "Semak Sebelum Hantar",
             back: "Kembali", submitBtn: "Hantar ke Google Sheets",
             total: "Jumlah", thCases: "Kes / Bulan",
-            unfilledWarn: "{n} DRG dalam senarai jabatan anda tidak diisi dan akan direkod sebagai tiada (kosong).",
+            unfilledWarn: "{n} DRG jabatan anda tidak diisi dan akan direkod sebagai tiada (kosong).",
             sumRibbon: "Ringkasan Langsung", sumTitle: "Ringkasan Anggaran HTPN", sumUpdated: "Dikemaskini:", reload: "Muat Semula",
             sumSubs: "Jabatan Telah Hantar", sumCases: "Jumlah Kes / Bulan", sumEmpty: "DRG Belum Ada Data",
             sumKkmRibbon: "Format KKM", sumKkmTitle: "Lajur HTPN dalam Format KKM", sumKkmSub: "Jumlah semua serahan aktif — sama seperti yang ditulis ke helaian \"Format KKM\".",
@@ -618,7 +617,7 @@
             footerSupport: "Sokongan teknikal: ferwahn@moh.gov.my",
             // Messages
             errTitle: "Maklumat Tidak Lengkap",
-            errDept: "Sila pilih jabatan / unit.", errDeptOther: "Sila nyatakan jabatan / unit.",
+            errDept: "Sila pilih jabatan anda di kotak 01.",
             errName: "Sila isi nama penuh.", errPost: "Sila isi jawatan.", errEmail: "Sila isi e-mel rasmi yang sah.",
             errNone: "Sila isi sekurang-kurangnya satu anggaran DRG (0 juga diterima).",
             sending: "Menghantar…", sendingMsg: "Data sedang ditulis ke Google Sheets. Jangan tutup halaman ini.",
@@ -640,32 +639,33 @@
             introBody: "MOH's BPP requests the estimated number of cases referred EACH MONTH from HTPN to the Public University Teaching Hospitals (HPUA) for the 31 shortlisted Diagnosis Related Groups (DRG) in SKR Phase 1. Enter your department's raw numbers — the portal sums every department straight into MOH's Google Sheets format.",
             daysLeft: "Days left",
             howTitle: "How to fill:",
-            howBody: " (1) Choose your department &amp; fill in your details. (2) Enter the <b>estimated number of cases per month</b> for every DRG your department refers. Leave blank if none. (3) Review &amp; submit. A new submission from the same department <b>replaces</b> the previous one. Deadline: <b>Friday, 20 November 2026</b>.",
-            ribbon01: "01 / Respondent",
+            howBody: " (1) Choose your department — only its DRGs are shown. (2) Fill in your details &amp; enter the <b>estimated number of cases per month</b> for every DRG your department refers. Leave blank if none. (3) Review &amp; submit. A new submission from the same department <b>replaces</b> the previous one. Deadline: <b>Friday, 20 November 2026</b>.",
+            ribbon01: "01 / Choose Department",
+            deptTitle: "Choose Your Department",
+            deptSub: "The DRG list below follows the specialty of the department you choose (the \"Kepakaran Terlibat\" column of the MOH table). Fill in your department's DRGs only.",
+            deptInfo: "shown for this department in box 03.",
+            deptPick: "choose a department first ↓",
+            ribbon02p: "02 / Respondent",
             profileTitle: "Respondent Details",
             profileSub: "One representative per department / unit.",
-            dept: "Department / Unit", deptOther: "Specify department / unit", deptOtherPh: "e.g. Intensive Care Unit",
+            dept: "Department / Specialty",
             deptSelect: "— Choose department —",
-            deptAll: "Whole Hospital (HIO / Administration)", deptOtherOpt: "Other (specify)",
             name: "Full Name", namePh: "Dr. Officer Name",
             post: "Position", postPh: "e.g. Physician UD54 / HOD",
             email: "Official Email", phone: "Phone No.", optional: "(optional)",
             scribble1: "fill & check ✓",
-            ribbon02: "02 / Monthly Case Estimates",
+            ribbon02: "03 / Monthly Case Estimates",
             drgTitle: "Estimated Referral Cases (Per Month)",
             drgSub: "Raw estimate of cases per month to be referred from HTPN to the HPUA. Whole numbers only.",
-            filterMine: "My Department's DRGs", filterAll: "All 31 DRGs",
-            searchPh: "Search DRG / specialty…",
             thDrg: "Diagnosis Related Group (DRG) · Specialties Involved", thEst: "Cases / Month",
-            pickDept: "Choose your department in box 01 to see its DRGs, or tap \"All 31 DRGs\".",
-            noMatch: "No matching DRG.",
+            pickDept: "Choose your department in box 01 — its DRGs will appear here.",
             notes: "Notes", notesPh: "e.g. estimate based on Jan–Oct 2026 referral data",
             tFilled: "DRGs filled", tTotal: "Total cases / month",
             resetBtn: "Clear", reviewBtn: "Review & Submit",
             reviewChip: "Official Submission", reviewTitle: "Review Before Submitting",
             back: "Back", submitBtn: "Send to Google Sheets",
             total: "Total", thCases: "Cases / Month",
-            unfilledWarn: "{n} DRGs in your department's list are blank and will be recorded as none (empty).",
+            unfilledWarn: "{n} of your department's DRGs are blank and will be recorded as none (empty).",
             sumRibbon: "Live Summary", sumTitle: "HTPN Estimate Summary", sumUpdated: "Updated:", reload: "Reload",
             sumSubs: "Departments Submitted", sumCases: "Total Cases / Month", sumEmpty: "DRGs With No Data",
             sumKkmRibbon: "MOH Format", sumKkmTitle: "HTPN Column in MOH Format", sumKkmSub: "Sum of all active submissions — the same figures written to the \"Format KKM\" sheet.",
@@ -676,7 +676,7 @@
             footerOrg: "Selangor State Health Department",
             footerSupport: "Technical support: ferwahn@moh.gov.my",
             errTitle: "Incomplete Details",
-            errDept: "Please choose a department / unit.", errDeptOther: "Please specify the department / unit.",
+            errDept: "Please choose your department in box 01.",
             errName: "Please enter your full name.", errPost: "Please enter your position.", errEmail: "Please enter a valid official email.",
             errNone: "Please fill in at least one DRG estimate (0 is accepted).",
             sending: "Sending…", sendingMsg: "Writing to Google Sheets. Please keep this page open.",
@@ -692,8 +692,7 @@
 
     // ================= State =================
     let lang = "ms";
-    let filter = "mine";
-    const values = {};          // { drgNo: "12" } — strings, blank = not filled
+    let allValues = {};         // { "Perubatan Am": { drgNo: "12" } } — strings, blank = not filled
     const DRAFT_KEY = "skr_htpn_draft_v1";
 
     const $ = id => document.getElementById(id);
@@ -729,56 +728,44 @@
         const cur = sel.value;
         sel.innerHTML = "";
         sel.add(new Option(t("deptSelect"), ""));
-        DEPTS.forEach(d => sel.add(new Option(d.key ? t(d.key) : d.v, d.v)));
+        DEPTS.forEach(d => sel.add(new Option(d.v, d.v)));
         sel.value = cur;
     }
     function currentDept() { return DEPTS.find(d => d.v === $("p_dept").value); }
+    function deptMatches(drg, d = currentDept()) { return !!d && drg[2].some(s => d.match.includes(s)); }
+    function deptDrgs() { return DRGS.filter(drg => deptMatches(drg)); }
+    /** Numbers are kept per department, so switching department never carries figures across. */
+    function vals() {
+        const k = $("p_dept").value;
+        return allValues[k] || (allValues[k] = {});
+    }
     function onDeptChange() {
-        const d = currentDept();
-        $("p_dept_other_wrap").hidden = !(d && d.v === "Lain-lain");
-        if (d && (d.match === "ALL" || d.v === "Lain-lain")) setFilter("all", true);
-        else if (d) setFilter("mine", true);
         renderDrgList();
         saveDraft();
+        if (currentDept()) $("p_dept").classList.remove("invalid");
     }
-    function deptMatches(drg) {
+    function updateDeptInfo() {
         const d = currentDept();
-        if (!d) return false;
-        if (d.match === "ALL") return true;
-        return drg[2].some(s => d.match.includes(s));
+        $("dept_info").innerHTML = d
+            ? `<span class="chip blue">${deptDrgs().length} DRG</span> ${esc(t("deptInfo"))}`
+            : `<span class="scribble" style="font-size:20px">${esc(t("deptPick"))}</span>`;
     }
 
     // ================= DRG list =================
-    function setFilter(f, silent) {
-        filter = f;
-        $("f_mine").classList.toggle("is-active", f === "mine");
-        $("f_all").classList.toggle("is-active", f === "all");
-        if (!silent) renderDrgList();
-    }
-    function visibleDrgs() {
-        const q = $("drg_search").value.trim().toLowerCase();
-        return DRGS.filter(drg => {
-            if (filter === "mine" && !deptMatches(drg) && !values[drg[0]]) return false;
-            if (!q) return true;
-            return (drg[0] + " " + drg[1] + " " + drg[2].join(" ")).toLowerCase().includes(q);
-        });
-    }
     function renderDrgList() {
         const d = currentDept();
-        const mine = d && d.match !== "ALL" ? d.match : [];
-        const list = visibleDrgs();
+        const v0 = vals();
+        updateDeptInfo();
         let html = `<div class="drg-head"><div>Bil.</div><div>${esc(t("thDrg"))}</div><div style="text-align:right">${esc(t("thEst"))}</div></div>`;
-        if (filter === "mine" && !d) {
-            html += `<div class="empty-row"><i class="fas fa-hand-point-left"></i> ${esc(t("pickDept"))}</div>`;
-        } else if (!list.length) {
-            html += `<div class="empty-row">${esc(t("noMatch"))}</div>`;
+        if (!d) {
+            html += `<div class="empty-row"><i class="fas fa-hand-point-up"></i> ${esc(t("pickDept"))}</div>`;
         } else {
-            html += list.map(([no, name, specs]) => {
-                const v = values[no] ?? "";
+            html += deptDrgs().map(([no, name, specs]) => {
+                const v = v0[no] ?? "";
                 return `<div class="drg-row${v !== "" ? " filled" : ""}" id="row_${no}">
                     <div class="drg-no">${no}</div>
                     <div><div class="drg-name">${esc(name)}</div>
-                        <div class="specs">${specs.map(s => `<span class="spec${mine.includes(s) ? " mine" : ""}">${esc(s)}</span>`).join("")}</div></div>
+                        <div class="specs">${specs.map(s => `<span class="spec${d.match.includes(s) ? " mine" : ""}">${esc(s)}</span>`).join("")}</div></div>
                     <div class="drg-input"><input class="num-field" type="number" inputmode="numeric" min="0" max="99999" step="1"
                         placeholder="–" aria-label="DRG ${no}" value="${esc(v)}" data-no="${no}" oninput="onValue(this)"></div>
                 </div>`;
@@ -791,26 +778,29 @@
         const no = +el.dataset.no;
         let v = el.value.replace(/[^\d]/g, "");
         if (v.length > 5) v = v.slice(0, 5);
-        if (v !== "" ) v = String(parseInt(v, 10));
+        if (v !== "") v = String(parseInt(v, 10));
         if (el.value !== v) el.value = v;
-        if (v === "") delete values[no]; else values[no] = v;
+        if (v === "") delete vals()[no]; else vals()[no] = v;
         $("row_" + no).classList.toggle("filled", v !== "");
         updateTally();
         saveDraft();
     }
+    /** Only the selected department's DRGs are ever submitted. */
     function filledEntries() {
-        return DRGS.filter(d => values[d[0]] !== undefined && values[d[0]] !== "").map(d => ({ no: d[0], name: d[1], n: parseInt(values[d[0]], 10) }));
+        const v0 = vals();
+        return deptDrgs().filter(d => v0[d[0]] !== undefined && v0[d[0]] !== "").map(d => ({ no: d[0], name: d[1], n: parseInt(v0[d[0]], 10) }));
     }
     function updateTally() {
         const f = filledEntries();
-        $("t_filled").textContent = f.length;
+        const d = currentDept();
+        $("t_filled").textContent = d ? `${f.length}/${deptDrgs().length}` : "0";
         $("t_total").textContent = fmt(f.reduce((a, e) => a + e.n, 0));
         $("review_btn").classList.toggle("ready", f.length > 0);
     }
     function resetValues() {
         if (!filledEntries().length) return;
         if (!confirm(t("resetConfirm"))) return;
-        Object.keys(values).forEach(k => delete values[k]);
+        allValues[$("p_dept").value] = {};
         renderDrgList();
         saveDraft();
     }
@@ -818,33 +808,26 @@
     // ================= Draft (per browser) =================
     function saveDraft() {
         storageSet(DRAFT_KEY, JSON.stringify({
-            dept: $("p_dept").value, deptOther: $("p_dept_other").value, name: $("p_name").value,
+            dept: $("p_dept").value, name: $("p_name").value,
             post: $("p_post").value, email: $("p_email").value, phone: $("p_phone").value,
-            notes: $("p_notes").value, values
+            notes: $("p_notes").value, allValues
         }));
     }
     function loadDraft() {
         let d;
         try { d = JSON.parse(storageGet(DRAFT_KEY) || "null"); } catch (e) { d = null; }
         if (!d) return false;
-        $("p_dept").value = d.dept || "";
-        ["deptOther", "name", "post", "email", "phone", "notes"].forEach(k => {
-            const id = { deptOther: "p_dept_other", name: "p_name", post: "p_post", email: "p_email", phone: "p_phone", notes: "p_notes" }[k];
-            $(id).value = d[k] || "";
-        });
-        Object.assign(values, d.values || {});
-        $("p_dept_other_wrap").hidden = d.dept !== "Lain-lain";
-        const dep = currentDept();
-        if (dep && (dep.match === "ALL" || dep.v === "Lain-lain")) setFilter("all", true);
-        return Object.keys(values).length > 0;
+        $("p_dept").value = DEPTS.some(x => x.v === d.dept) ? d.dept : "";
+        const ids = { name: "p_name", post: "p_post", email: "p_email", phone: "p_phone", notes: "p_notes" };
+        Object.keys(ids).forEach(k => { $(ids[k]).value = d[k] || ""; });
+        allValues = d.allValues && typeof d.allValues === "object" ? d.allValues : {};
+        return filledEntries().length > 0;
     }
 
     // ================= Validation + review =================
     function collectProfile() {
-        const dept = $("p_dept").value;
-        const other = $("p_dept_other").value.trim();
         return {
-            dept: dept === "Lain-lain" ? (other ? "Lain-lain: " + other : "") : dept,
+            dept: $("p_dept").value,
             name: $("p_name").value.trim(),
             post: $("p_post").value.trim(),
             email: $("p_email").value.trim(),
@@ -855,8 +838,7 @@
     function validate() {
         const p = collectProfile();
         const checks = [
-            ["p_dept", !!$("p_dept").value, "errDept"],
-            ["p_dept_other", $("p_dept").value !== "Lain-lain" || !!$("p_dept_other").value.trim(), "errDeptOther"],
+            ["p_dept", !!currentDept(), "errDept"],
             ["p_name", p.name.length >= 3, "errName"],
             ["p_post", p.post.length >= 2, "errPost"],
             ["p_email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email), "errEmail"]
@@ -865,7 +847,7 @@
         const bad = checks.filter(c => !c[1]);
         bad.forEach(c => $(c[0]).classList.add("invalid"));
         const msgs = bad.map(c => "• " + t(c[2]));
-        if (!filledEntries().length) msgs.push("• " + t("errNone"));
+        if (currentDept() && !filledEntries().length) msgs.push("• " + t("errNone"));
         if (msgs.length) {
             showModal(t("errTitle"), msgs.join("\n"), "warning");
             if (bad.length) $(bad[0][0]).scrollIntoView({ behavior: "smooth", block: "center" });
@@ -877,14 +859,12 @@
         const p = validate();
         if (!p) return;
         const f = filledEntries();
-        const deptLabel = (currentDept() && currentDept().key && currentDept().v !== "Lain-lain") ? t(currentDept().key) : p.dept;
         $("review_meta").innerHTML = [
-            [t("dept"), deptLabel], [t("name"), p.name], [t("post"), p.post], [t("email"), p.email]
+            [t("dept"), p.dept], [t("name"), p.name], [t("post"), p.post], [t("email"), p.email]
         ].map(([k, v]) => `<div><b>${esc(k)}</b>${esc(v)}</div>`).join("");
         $("review_body").innerHTML = f.map(e => `<tr><td>${e.no}</td><td>${esc(e.name)}</td><td class="r">${fmt(e.n)}</td></tr>`).join("");
         $("review_total").textContent = fmt(f.reduce((a, e) => a + e.n, 0));
-        const d = currentDept();
-        const missing = d && d.match !== "ALL" ? DRGS.filter(x => deptMatches(x) && !(x[0] in values)).length : 0;
+        const missing = deptDrgs().length - f.length;
         $("review_warn").textContent = missing ? t("unfilledWarn", { n: missing }) : "";
         $("review").classList.add("open");
     }
