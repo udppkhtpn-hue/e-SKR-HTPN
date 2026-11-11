@@ -13,6 +13,20 @@ A web form where each HTPN department enters its **estimated monthly referral ca
 4. It then rebuilds **`Format KKM`**, an exact copy of the KKM template. Column L (*Hospital Tengku Permaisuri Norashikin, Kajang.*) holds the sum of all active submissions. This has been checked cell by cell against `Bil. Kes SKR Hospital KKM - Sheet1.csv` with zero differences.
 5. **`Pecahan Jabatan`** shows the DRG × department breakdown and the list of active submissions.
 
+**HTPN departments and their DRGs.** These are set in `DEPTS` in `index.html`.
+
+| Department | KKM specialties covered | DRGs |
+|---|---|---|
+| Perubatan Am | Perubatan Am, Respiratori, Kardiologi, Neurologi, Gastroenterologi & Hepatologi, Hematologi Klinikal, plus DRG 18* | 1, 13–27, 31 (17) |
+| Pembedahan Am | Pembedahan Am, Upper GI, Hepatobiliari, Kolorektal, Plastik, Kardiotorasik, Urologi | 1–8, 25–28 (12) |
+| Pembedahan Pediatrik | Pembedahan Pediatrik | 1, 2 |
+| Ortopedik | Ortopedik | 7, 8, 30 |
+| Obstetrik & Ginekologi | Obstetrik & Ginekologi | 9–12, 29 |
+| Pediatrik | Pediatrik, Pediatrik Am, plus DRG 18* | 15, 18, 24, 30 |
+| Pembedahan Oral & Maksilofasial (OMFS) | DRG 18* | 18 |
+
+\* DRG 18 (ENT infections) is listed only under Otorinolaringologi, and HTPN has no ENT department. HTPN has assigned it to Perubatan Am, Pediatrik and OMFS. The "Format KKM" sheet still shows KKM's original "Kepakaran Terlibat" text.
+
 **Resubmission rule.** A new submission from the same department replaces that department's previous one: the old rows are marked `DIGANTI` and only `AKTIF` rows are counted.
 
 ## Setup (about 10 minutes)

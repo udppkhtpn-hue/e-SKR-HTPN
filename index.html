@@ -546,14 +546,17 @@
 
     // HTPN's 6 clinical departments. `match` = the KKM "Kepakaran Terlibat" entries each one covers.
     // HTPN has no separate subspecialty units, so medical subspecialties fold into Perubatan Am and
-    // surgical subspecialties into Pembedahan Am. The value is what gets saved to the sheet.
+    // surgical subspecialties into Pembedahan Am. `extra` = DRG numbers added by HTPN decision where
+    // the KKM specialty has no HTPN department (DRG 18 is Otorinolaringologi only; HTPN has no ENT).
+    // The value is what gets saved to the sheet.
     const DEPTS = [
-        { v: "Perubatan Am", match: ["Perubatan Am", "Perubatan Respiratori", "Kardiologi", "Neurologi", "Gastroenterologi & Hepatologi", "Hematologi Klinikal"] },
+        { v: "Perubatan Am", match: ["Perubatan Am", "Perubatan Respiratori", "Kardiologi", "Neurologi", "Gastroenterologi & Hepatologi", "Hematologi Klinikal"], extra: [18] },
         { v: "Pembedahan Am", match: ["Pembedahan Am", "Pembedahan Upper Gastrointesinal Tract", "Pembedahan Hepatobiliari", "Pembedahan Kolorektal", "Pembedahan Plastik", "Pembedahan Kardiotorasik", "Urologi"] },
         { v: "Pembedahan Pediatrik", match: ["Pembedahan Pediatrik"] },
         { v: "Ortopedik", match: ["Ortopedik"] },
         { v: "Obstetrik & Ginekologi", match: ["Obstetrik & Ginekologi"] },
-        { v: "Pediatrik", match: ["Pediatrik", "Pediatrik Am"] }
+        { v: "Pediatrik", match: ["Pediatrik", "Pediatrik Am"], extra: [18] },
+        { v: "Pembedahan Oral & Maksilofasial (OMFS)", match: [], extra: [18] }
     ];
 
     // ================= Translations =================
@@ -574,6 +577,7 @@
             deptSub: "Senarai DRG di bawah akan dipaparkan mengikut kepakaran jabatan yang dipilih (lajur \"Kepakaran Terlibat\" dalam jadual KKM). Isi DRG jabatan anda sahaja.",
             deptInfo: "dipaparkan untuk jabatan ini di kotak 03.",
             deptPick: "pilih jabatan dahulu ↓",
+            htpnAssigned: "Ditetapkan HTPN",
             ribbon02p: "02 / Maklumat Pengisi",
             profileTitle: "Maklumat Pengisi",
             profileSub: "Seorang wakil bagi setiap jabatan / unit.",
@@ -634,6 +638,7 @@
             deptSub: "The DRG list below follows the specialty of the department you choose (the \"Kepakaran Terlibat\" column of the MOH table). Fill in your department's DRGs only.",
             deptInfo: "shown for this department in box 03.",
             deptPick: "choose a department first ↓",
+            htpnAssigned: "Assigned by HTPN",
             ribbon02p: "02 / Respondent",
             profileTitle: "Respondent Details",
             profileSub: "One representative per department / unit.",
@@ -721,7 +726,9 @@
         sel.value = cur;
     }
     function currentDept() { return DEPTS.find(d => d.v === $("p_dept").value); }
-    function deptMatches(drg, d = currentDept()) { return !!d && drg[2].some(s => d.match.includes(s)); }
+    function deptMatches(drg, d = currentDept()) {
+        return !!d && (drg[2].some(s => d.match.includes(s)) || (d.extra || []).includes(drg[0]));
+    }
     function deptDrgs() { return DRGS.filter(drg => deptMatches(drg)); }
     /** Numbers are kept per department, so switching department never carries figures across. */
     function vals() {
@@ -754,7 +761,7 @@
                 return `<div class="drg-row${v !== "" ? " filled" : ""}" id="row_${no}">
                     <div class="drg-no">${no}</div>
                     <div><div class="drg-name">${esc(name)}</div>
-                        <div class="specs">${specs.map(s => `<span class="spec${d.match.includes(s) ? " mine" : ""}">${esc(s)}</span>`).join("")}</div></div>
+                        <div class="specs">${specs.map(s => `<span class="spec${d.match.includes(s) ? " mine" : ""}">${esc(s)}</span>`).join("")}${(d.extra || []).includes(no) ? `<span class="spec mine">+ ${esc(t("htpnAssigned"))}</span>` : ""}</div></div>
                     <div class="drg-input"><input class="num-field" type="number" inputmode="numeric" min="0" max="99999" step="1"
                         placeholder="–" aria-label="DRG ${no}" value="${esc(v)}" data-no="${no}" oninput="onValue(this)"></div>
                 </div>`;
