@@ -1,13 +1,14 @@
 # PORTAL SKR HTPN e-RUJUKAN
 
-A web form where each HTPN department enters its **estimated number of potential cases per month** that could be referred (not cases already referred) to the public university teaching hospitals (PPUM, HSAAS UPM, HTABTAR UKM) for the **31 DRGs** of the Sinergi Kesihatan Rakyat (SKR) 2027 initiative. The request comes from BPP KKM, ref. KKM.600-1/4/20 JLD 8 (27), dated 6 Nov 2026, and the deadline is **20 Nov 2026**.
+A web form where each HTPN department enters its **estimated number of potential cases per month** that could be referred (not cases already referred, and regardless of treatment cost or whether a government Guarantee Letter (GL) is available) to the public university teaching hospitals (PPUM, HSAAS UPM, HTABTAR UKM) for the **31 DRGs** of the Sinergi Kesihatan Rakyat (SKR) 2027 initiative. The request comes from BPP KKM, ref. KKM.600-1/4/20 JLD 8 (27), dated 6 Nov 2026, and the deadline is **20 Nov 2026**.
 
 - **Front end:** `index.html` (one vanilla HTML file, in the same printed-poster UI as PPTUK e-CLINICAL), hosted on GitHub Pages.
 - **Back end:** `apps-script/Code.gs`, a Google Apps Script bound to a Google Sheet.
 
 ## How the data flows
 
-1. **01 / Pilih Jabatan:** the head of department picks their department or specialty from a dropdown. The list matches the "Kepakaran Terlibat" column of the KKM table.
+0. **Who fills it in:** each head of department shares the link with all their specialists. **Every specialist submits their own individual estimate.**
+1. **01 / Pilih Jabatan:** the specialist picks their department or specialty from a dropdown. The list matches the "Kepakaran Terlibat" column of the KKM table.
 2. **03 / Anggaran Kes:** only the DRGs for that specialty are shown (for example, 13 for Perubatan Am and 5 for O&G). They enter raw numbers (potential cases per month), review them, and submit. Numbers are kept separately for each department, and only the chosen department's DRGs are sent.
 3. Apps Script appends one row per DRG to **`Respons`**, the audit log.
 4. It then rebuilds **`Format KKM`**, an exact copy of the KKM template. Column L (*Hospital Tengku Permaisuri Norashikin, Kajang.*) holds the sum of all active submissions. This has been checked cell by cell against `Bil. Kes SKR Hospital KKM - Sheet1.csv` with zero differences.
@@ -27,7 +28,7 @@ A web form where each HTPN department enters its **estimated number of potential
 
 \* DRG 18 (ENT infections) is listed only under Otorinolaringologi, and HTPN has no ENT department. HTPN has assigned it to Perubatan Am, Pediatrik and OMFS. The "Format KKM" sheet still shows KKM's original "Kepakaran Terlibat" text.
 
-**Resubmission rule.** A new submission from the same department replaces that department's previous one: the old rows are marked `DIGANTI` and only `AKTIF` rows are counted.
+**Resubmission rule.** Submissions are matched **by email, one per specialist**. If a specialist submits again with the same email, the new submission replaces only their own previous one: the old rows are marked `DIGANTI` and only `AKTIF` rows are counted. Different specialists in the same department are **added together**. `Pecahan Jabatan` shows the totals per department and a **BIL. PAKAR** row counting how many specialists in each department have submitted.
 
 ## Setup (about 10 minutes)
 
@@ -53,7 +54,7 @@ Push `index.html`, `images/`, `apps-script/`, `README.md` and `.gitignore` to a 
 The `.gitignore` keeps the official KKM letter (PDF) and template (CSV) out of the public repo.
 
 ### Updating the script later
-After editing `Code.gs`, go to **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**. This keeps the same URL, so `index.html` doesn't need to change.
+After editing `Code.gs`, paste the new code into the Apps Script editor, then go to **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**. This keeps the same URL, so `index.html` doesn't need to change.
 
 ## Sending to KKM
 Open the **`Format KKM`** sheet. Its layout matches the KKM template, so the HTPN column can be copied directly into KKM's form at https://bit.ly/kesSKR, which needs MyGovUC email access. To refresh it by hand, use the **Portal SKR → Kemas kini Format KKM** menu.

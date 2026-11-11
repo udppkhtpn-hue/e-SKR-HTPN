@@ -14,8 +14,10 @@
  *   ACCESS_CODE   — if set, the form must send this code
  *   NOTIFY_EMAIL  — if set, an email is sent here on every submission
  *
- * Rule: a new submission from the same department marks that department's older
- * rows as "DIGANTI" (replaced); only "AKTIF" rows are counted.
+ * Each specialist submits their own estimate (potential referrals, regardless of cost or GL).
+ * Rule: a new submission from the same specialist (same e-mail) marks that specialist's older
+ * rows as "DIGANTI" (replaced); only "AKTIF" rows are counted. All specialists' active
+ * estimates are summed into the HTPN column.
  */
 
 const CFG = {
@@ -142,7 +144,7 @@ function submit_(req) {
     const now = new Date();
     const id = 'SKR-' + Utilities.formatDate(now, CFG.TZ, 'yyMMdd-HHmmss') + '-' + Math.floor(Math.random() * 900 + 100);
 
-    // Supersede this department's previous ACTIVE rows.
+    // Supersede this specialist's previous ACTIVE rows (keyed by e-mail).
     let replaced = 0;
     const last = sh.getLastRow();
     if (last > 1) {
@@ -150,7 +152,7 @@ function submit_(req) {
       const data = range.getValues();
       const status = data.map(r => [r[COL.STATUS]]);
       data.forEach((r, i) => {
-        if (String(r[COL.DEPT]).toLowerCase() === profile.dept.toLowerCase() && r[COL.STATUS] === 'AKTIF') {
+        if (String(r[COL.EMAIL]).trim().toLowerCase() === profile.email && r[COL.STATUS] === 'AKTIF') {
           status[i][0] = 'DIGANTI';
           replaced++;
         }
@@ -179,7 +181,7 @@ function notify_(id, p, rows, total, replaced) {
   try {
     const lines = rows.map(r => '  ' + r[0] + '. ' + r[1] + ': ' + r[2]).join('\n');
     MailApp.sendEmail(to, '[SKR HTPN] Serahan baharu: ' + p.dept + ' (' + total + ' kes/bulan)',
-      'ID Serahan: ' + id + (replaced ? ' (menggantikan serahan terdahulu)' : '') + '\n' +
+      'ID Serahan: ' + id + (replaced ? ' (menggantikan serahan terdahulu pakar ini)' : '') + '\n' +
       'Jabatan: ' + p.dept + '\nNama: ' + p.name + '\nJawatan: ' + p.post + '\nE-mel: ' + p.email +
       (p.phone ? '\nTelefon: ' + p.phone : '') + '\n\nAnggaran kes sebulan:\n' + lines +
       '\n\nJumlah: ' + total + (p.notes ? '\n\nCatatan: ' + p.notes : '') +
@@ -205,7 +207,7 @@ function summary_() {
 function aggregate_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ensureRawSheet_(ss);
-  const totals = {}, byDept = {}, subs = {};
+  const totals = {}, byDept = {}, subs = {}, deptPeople = {};
   DRGS.forEach(d => { totals[d[0]] = 0; });
   const last = sh.getLastRow();
   if (last > 1) {
@@ -215,6 +217,7 @@ function aggregate_() {
       if (!(no in totals)) return;
       totals[no] += n;
       byDept[dept] = byDept[dept] || {};
+      (deptPeople[dept] = deptPeople[dept] || {})[String(r[COL.EMAIL]).trim().toLowerCase()] = true;
       byDept[dept][no] = (byDept[dept][no] || 0) + n;
       const id = String(r[COL.ID]);
       if (!subs[id]) subs[id] = { id: id, dept: dept, name: String(r[COL.NAME]), post: String(r[COL.POST]),
@@ -222,7 +225,7 @@ function aggregate_() {
       subs[id].total += n;
     });
   }
-  return { totals: totals, byDept: byDept, subs: subs };
+  return { totals: totals, byDept: byDept, subs: subs, deptPeople: deptPeople };
 }
 
 // ============================ Sheet builders ============================
@@ -296,23 +299,25 @@ function buildDeptSheet_(ss, agg) {
   const now = Utilities.formatDate(new Date(), CFG.TZ, 'dd/MM/yyyy HH:mm:ss');
 
   sh.getRange(1, 1, 1, 2).setValues([['PECAHAN ANGGARAN KES RUJUKAN SKR MENGIKUT JABATAN — HTPN KAJANG', '']]).setFontWeight('bold');
-  sh.getRange(2, 1).setValue('Dikemaskini: ' + now + '  ·  Hanya serahan AKTIF dikira.');
+  sh.getRange(2, 1).setValue('Dikemaskini: ' + now + '  ·  Jumlah anggaran individu semua pakar · Hanya serahan AKTIF (terkini bagi setiap pakar) dikira.');
 
   const header = ['Bil.', 'Diagnosis Related Group (DRG)'].concat(depts, ['JUMLAH HTPN']);
   const rows = DRGS.map(d => [d[0], d[1]].concat(depts.map(k => agg.byDept[k][d[0]] === undefined ? '' : agg.byDept[k][d[0]]), [agg.totals[d[0]] || 0]));
   const totalRow = ['', 'JUMLAH'].concat(depts.map(k => Object.keys(agg.byDept[k]).reduce((a, n) => a + agg.byDept[k][n], 0)),
     [DRGS.reduce((a, d) => a + (agg.totals[d[0]] || 0), 0)]);
-  const table = [header].concat(rows, [totalRow]);
+  const peopleRow = ['', 'BIL. PAKAR (SERAHAN AKTIF)'].concat(depts.map(k => Object.keys(agg.deptPeople[k] || {}).length),
+    [Object.keys(agg.subs).length]);
+  const table = [header].concat(rows, [totalRow, peopleRow]);
   sh.getRange(4, 1, table.length, header.length).setValues(table);
   sh.getRange(4, 1, 1, header.length).setFontWeight('bold').setBackground('#111114').setFontColor('#ffd400').setWrap(true);
-  sh.getRange(4 + table.length - 1, 1, 1, header.length).setFontWeight('bold').setBackground('#fff6c2');
+  sh.getRange(4 + table.length - 2, 1, 2, header.length).setFontWeight('bold').setBackground('#fff6c2');
   sh.getRange(4, 1, table.length, header.length).setBorder(true, true, true, true, true, true);
   sh.getRange(5, header.length, DRGS.length, 1).setFontWeight('bold');
 
   // Active submissions list
   const start = 4 + table.length + 2;
   const subs = Object.keys(agg.subs).map(k => agg.subs[k]).sort((a, b) => b.time - a.time);
-  sh.getRange(start, 1).setValue('SERAHAN AKTIF').setFontWeight('bold');
+  sh.getRange(start, 1).setValue('SERAHAN AKTIF (SETIAP PAKAR)').setFontWeight('bold');
   const list = [['Tarikh & Masa', 'ID Serahan', 'Jabatan / Unit', 'Nama', 'Jawatan', 'Jumlah Kes']]
     .concat(subs.map(s => [Utilities.formatDate(s.time, CFG.TZ, 'dd/MM/yyyy HH:mm'), s.id, s.dept, s.name, s.post, s.total]));
   sh.getRange(start + 1, 1, list.length, 6).setValues(list);
