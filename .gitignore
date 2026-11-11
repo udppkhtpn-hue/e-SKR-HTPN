@@ -1,0 +1,5 @@
+# Source documents (official letter + KKM template) — keep out of the public repo
+*.pdf
+*.csv
+.claude/
+.DS_Store

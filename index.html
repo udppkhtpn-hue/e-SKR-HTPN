@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PORTAL SKR HTPN e-RUJUKAN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Space+Mono:wght@400;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============ Printed-poster theme (same tokens as PPTUK HTPN e-CLINICAL) ============ */
+        :root {
+            --ink: #111114;
+            --paper: #f3eee2;
+            --paper-2: #fbf8f1;
+            --red: #e10600;
+            --yellow: #ffd400;
+            --field: #fff6c2;
+            --blue: #1546d1;
+            --green: #047857;
+            --muted: #5b5b63;
+            --display: 'Archivo', 'Arial Black', sans-serif;
+            --mono: 'Space Mono', 'Courier New', monospace;
+            --hand: 'Caveat', cursive;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; background: #1c1c1e; }
+        body { font-family: var(--mono); color: var(--ink); min-height: 100svh; }
+        button, input, select, textarea { font: inherit; color: inherit; }
+        [hidden] { display: none !important; }
+
+        /* The printed sheet: paper grain, dot grid, creases */
+        .sheet {
+            position: relative; margin: 14px; min-height: calc(100svh - 28px);
+            background-color: var(--paper);
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2  0 0 0 0 .17  0 0 0 0 .1  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                radial-gradient(rgba(17,17,20,.28) 1px, transparent 1.3px);
+            background-size: 220px 220px, 14px 14px;
+            border: 3px solid var(--ink); border-radius: 3px 6px 2px 8px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 18px 40px rgba(0,0,0,.55), inset 0 0 60px rgba(120,90,40,.18);
+            overflow: clip; display: flex; flex-direction: column;
+        }
+        .sheet::before, .sheet::after { content: ""; position: absolute; pointer-events: none; z-index: 40; }
+        .sheet::before { top: 0; bottom: 0; left: 50%; width: 3px; background: linear-gradient(90deg, rgba(255,255,255,.55), rgba(0,0,0,.10) 60%, transparent); }
+        .sheet::after { left: 0; right: 0; top: 38%; height: 3px; background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(0,0,0,.09) 60%, transparent); }
+
+        .wrap { width: 100%; max-width: 1280px; margin: 0 auto; padding: 40px 32px; flex: 1; }
+        .px { margin-left: 32px; margin-right: 32px; }
+
+        /* Meta strip */
+        .meta-strip { margin-top: 16px; padding-bottom: 8px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; border-bottom: 3px double var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .meta-strip > div { display: flex; align-items: center; gap: 6px; }
+        .cmyk { display: inline-flex; gap: 4px; margin-left: 4px; }
+        .cmyk b { display: inline-grid; place-items: center; width: 15px; height: 15px; font-size: 9px; color: #fff; }
+        .tag-box { background: var(--ink); color: var(--yellow); padding: 2px 6px; font-weight: 700; }
+
+        /* Hazard stripes */
+        .hazard { height: 10px; background: repeating-linear-gradient(-45deg, var(--yellow) 0 11px, var(--ink) 11px 22px); position: relative; z-index: 2; }
+
+        /* Masthead */
+        .masthead { position: relative; margin-top: 20px; background: var(--ink); color: #fff; border: 3px solid var(--ink); box-shadow: 8px 8px 0 rgba(17,17,20,.9); overflow: hidden; }
+        .masthead .slab { position: absolute; right: -40px; top: 18px; bottom: -30px; width: 230px; background: var(--red); transform: rotate(-9deg); box-shadow: -6px 6px 0 var(--yellow); }
+        .masthead .slab span { position: absolute; left: 22px; top: 46px; font-family: var(--display); font-weight: 900; font-size: 72px; letter-spacing: -.03em; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,.55); }
+        .masthead .burst { position: absolute; right: 150px; top: -120px; width: 320px; height: 320px; border-radius: 50%; background: repeating-conic-gradient(rgba(255,212,0,.16) 0 6deg, transparent 6deg 15deg); pointer-events: none; animation: spin 60s linear infinite; }
+        .mast-inner { position: relative; z-index: 2; padding: 24px 32px; }
+        .mast-row { display: flex; align-items: flex-start; gap: 20px; }
+        .mast-text { min-width: 0; padding-right: 224px; }
+        .mast-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .mast-tags .org { font-size: 12px; font-weight: 700; color: var(--yellow); }
+        .logo-seal { width: 96px; height: 96px; flex-shrink: 0; object-fit: contain; filter: drop-shadow(4px 4px 0 rgba(0,0,0,.55)); }
+        .tag-red { background: var(--red); color: #fff; font-family: var(--display); font-weight: 800; font-size: 10px; padding: 2px 6px; border: 2px solid #fff; letter-spacing: .04em; }
+        .mast-title { font-family: var(--display); font-weight: 900; letter-spacing: -.035em; line-height: .9; font-size: 48px; margin: 0; }
+        .mast-title .sub { font-family: var(--mono); font-weight: 700; letter-spacing: 0; font-size: 30px; color: var(--yellow); vertical-align: middle; }
+        .mast-sub { font-size: 12px; margin: 10px 0 0; color: #e5e5e5; max-width: 640px; line-height: 1.5; }
+        .mast-actions { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.2); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-right: 224px; }
+
+        /* Buttons */
+        .btn { font-family: var(--display); font-weight: 800; text-transform: uppercase; letter-spacing: .02em; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 9px 16px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform .08s, box-shadow .08s; cursor: pointer; text-decoration: none; border-radius: 0; }
+        .btn:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+        .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+        .btn:disabled { opacity: .55; cursor: wait; }
+        .btn-yellow { background: var(--yellow); color: var(--ink); }
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-white { background: #fff; color: var(--ink); }
+        .btn-ink { background: var(--ink); color: var(--yellow); }
+        .btn-lg { padding: 14px 22px; font-size: 14px; }
+        .btn-block { width: 100%; }
+        .masthead .btn { border-color: var(--yellow); box-shadow: 4px 4px 0 var(--yellow); }
+        .masthead .btn-ghost { background: transparent; color: #fff; border-color: #fff; box-shadow: 4px 4px 0 #fff; }
+        .masthead .btn.is-active { background: var(--yellow); color: var(--ink); }
+
+        /* Cards */
+        .card { position: relative; background: var(--paper-2); border: 3px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 28px; }
+        .card-head { border-bottom: 3px solid var(--ink); padding-bottom: 12px; margin: 8px 0 18px; }
+        .ribbon { position: absolute; top: -18px; left: -14px; z-index: 5; background: var(--red); color: #fff; border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); font-family: var(--display); font-weight: 800; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 10px; transform: rotate(-3.5deg); }
+        .ribbon.blue { background: var(--blue); }
+        .ribbon.yellow { background: var(--yellow); color: var(--ink); }
+        .chip { display: inline-block; font-family: var(--display); font-weight: 800; font-size: 10px; padding: 2px 6px; border: 2px solid var(--ink); background: var(--yellow); color: var(--ink); text-transform: uppercase; line-height: 1.4; }
+        .chip.red { background: var(--red); color: #fff; }
+        .chip.blue { background: var(--blue); color: #fff; }
+        .chip.ink { background: var(--ink); color: var(--yellow); }
+        .chip.white { background: #fff; }
+        .chip.green { background: var(--green); color: #fff; }
+        .kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #3d3d44; }
+        .h-display { font-family: var(--display); font-weight: 900; text-transform: uppercase; letter-spacing: -.02em; line-height: .95; margin: 0; }
+        .small { font-size: 11px; color: var(--muted); line-height: 1.55; margin: 6px 0 0; }
+        .stamp { position: absolute; width: 78px; height: 78px; border-radius: 50%; border: 3px solid var(--red); outline: 2px dashed var(--red); outline-offset: -9px; color: var(--red); display: grid; place-items: center; text-align: center; font-family: var(--display); font-weight: 900; font-size: 10px; line-height: 1; transform: rotate(14deg); opacity: .85; }
+        .stamp small { display: block; font-size: 7px; letter-spacing: .08em; margin-top: 2px; }
+        .scribble { font-family: var(--hand); color: var(--red); font-size: 24px; line-height: 1; transform: rotate(-6deg); display: inline-block; }
+        .giant-outline { position: absolute; font-family: var(--display); font-weight: 900; color: transparent; -webkit-text-stroke: 2px rgba(17,17,20,.12); letter-spacing: -.04em; line-height: .8; pointer-events: none; user-select: none; }
+
+        /* Form fields */
+        .field-label { font-family: var(--display); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .field-label i { color: var(--red); }
+        .field-label .opt { font-family: var(--mono); font-weight: 400; text-transform: none; color: #77777f; letter-spacing: 0; }
+        .field { width: 100%; background: #fff; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 9px 11px; font-family: var(--mono); font-size: 13px; border-radius: 0; outline: none; }
+        .field:focus { box-shadow: 4px 4px 0 var(--blue); background: #fffef6; }
+        .field::placeholder { color: #8c8c94; }
+        .field.invalid { box-shadow: 4px 4px 0 var(--red); }
+        select.field { appearance: auto; }
+        .stack > * + * { margin-top: 16px; }
+        .notice { background: var(--field); border: 3px solid var(--ink); padding: 14px 16px; font-size: 11px; line-height: 1.6; }
+        .notice b.t { color: var(--red); text-transform: uppercase; }
+
+        /* Intro */
+        .intro-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: end; }
+        .intro p { font-size: 12px; line-height: 1.7; margin: 10px 0 0; max-width: 680px; }
+        .hpua { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .stat { background: #fff; border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); position: relative; overflow: hidden; padding: 22px 14px 12px; }
+        .stat::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 8px; }
+        .stat.s-blue::before { background: var(--blue); }
+        .stat.s-red::before { background: var(--red); }
+        .stat.s-yellow::before { background: var(--yellow); }
+        .stat.s-ink::before { background: var(--ink); }
+        .stat .num { font-family: var(--display); font-weight: 900; letter-spacing: -.03em; font-size: 38px; line-height: 1; margin-top: 4px; }
+        .stat .lbl { font-family: var(--display); font-weight: 800; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+        .stat:nth-child(1) { transform: rotate(-1.5deg); }
+        .stat:nth-child(2) { transform: rotate(1deg) translateY(-6px); }
+        .stat:nth-child(3) { transform: rotate(-.6deg); }
+
+        /* Layout: profile + entries */
+        .form-grid { display: grid; grid-template-columns: 340px 1fr; gap: 40px; margin-top: 48px; align-items: start; }
+        .profile-card { transform: rotate(-.6deg); position: sticky; top: 16px; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* DRG toolbar */
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+        .seg { display: inline-flex; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+        .seg button { border: 0; background: #fff; padding: 8px 12px; font-family: var(--display); font-weight: 800; font-size: 11px; text-transform: uppercase; cursor: pointer; }
+        .seg button + button { border-left: 3px solid var(--ink); }
+        .seg button.is-active { background: var(--ink); color: var(--yellow); }
+        .toolbar .search { flex: 1; min-width: 180px; }
+
+        /* DRG rows */
+        .drg-list { border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); background: #fff; }
+        .drg-head, .drg-row { display: grid; grid-template-columns: 56px 1fr 150px; }
+        .drg-head { background: var(--ink); color: var(--yellow); font-family: var(--display); font-weight: 800; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; position: sticky; top: 0; z-index: 3; }
+        .drg-head > div { padding: 9px 10px; }
+        .drg-head > div + div { border-left: 2px solid #333; }
+        .drg-row { border-top: 2px solid var(--ink); transition: background .2s; }
+        .drg-row:nth-child(even) { background: #faf6ea; }
+        .drg-row > div { padding: 12px 10px; }
+        .drg-row > div + div { border-left: 2px solid var(--ink); }
+        .drg-no { font-family: var(--display); font-weight: 900; font-size: 20px; text-align: center; }
+        .drg-name { font-family: var(--display); font-weight: 800; font-size: 14px; line-height: 1.2; }
+        .specs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+        .spec { font-size: 10px; border: 1.5px solid var(--ink); padding: 1px 6px; background: #fff; white-space: nowrap; }
+        .spec.mine { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 700; }
+        .drg-input { display: flex; align-items: center; }
+        .num-field { width: 100%; text-align: right; font-family: var(--display); font-weight: 900; font-size: 22px; padding: 6px 10px; border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); background: #fff; outline: none; border-radius: 0; -moz-appearance: textfield; }
+        .num-field::-webkit-outer-spin-button, .num-field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .num-field:focus { box-shadow: 3px 3px 0 var(--blue); }
+        .num-field::placeholder { color: #c4c0b4; font-weight: 700; }
+        .drg-row.filled { background: var(--field) !important; }
+        .drg-row.filled .drg-no { color: var(--red); }
+        .empty-row { padding: 28px; text-align: center; font-size: 12px; color: var(--muted); border-top: 2px solid var(--ink); }
+
+        /* Sticky tally bar */
+        .tally { position: sticky; bottom: 0; z-index: 30; margin-top: 28px; background: var(--ink); color: #fff; border: 3px solid var(--ink); box-shadow: 0 -6px 0 var(--yellow); display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; flex-wrap: wrap; }
+        .tally .t-stats { display: flex; gap: 22px; align-items: baseline; flex-wrap: wrap; }
+        .tally .t-num { font-family: var(--display); font-weight: 900; font-size: 26px; color: var(--yellow); }
+        .tally .t-lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-left: 6px; }
+        .tally .btn { border-color: var(--yellow); box-shadow: 4px 4px 0 var(--yellow); }
+
+        /* Tables (review + summary) */
+        .table-wrap { border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); background: #fff; overflow-x: auto; }
+        .table-brut { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
+        .table-brut th { background: var(--ink); color: var(--yellow); font-family: var(--display); font-weight: 800; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; border: 2px solid var(--ink); padding: 8px; text-align: left; position: sticky; top: 0; }
+        .table-brut td { border: 2px solid var(--ink); padding: 8px; vertical-align: top; }
+        .table-brut tbody tr:nth-child(even) td { background: #faf6ea; }
+        .table-brut .r { text-align: right; font-family: var(--display); font-weight: 900; font-size: 15px; }
+        .table-brut tfoot td { background: var(--yellow); font-family: var(--display); font-weight: 900; text-transform: uppercase; }
+
+        /* Summary view */
+        .sum-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 8px 0 32px; }
+        .sum-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+        .modal.open { display: flex; }
+        .modal-box { background: var(--paper-2); border: 3px solid var(--ink); box-shadow: 10px 10px 0 var(--yellow), 10px 10px 0 3px var(--ink); width: 100%; max-width: 380px; padding: 24px; text-align: center; max-height: 90svh; overflow: auto; animation: pop .25s cubic-bezier(.2,1.4,.4,1); }
+        .modal-box.wide { max-width: 760px; text-align: left; }
+        .m-icon { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--ink); display: grid; place-items: center; margin: 0 auto 12px; font-size: 20px; }
+        .m-icon.success { background: #d1fae5; color: var(--green); }
+        .m-icon.error { background: #fee2e2; color: #b91c1c; }
+        .m-icon.warning { background: #fef3c7; color: #b45309; }
+        .m-icon.info { background: #dbeafe; color: var(--blue); }
+        .modal-box p { font-size: 12px; color: #444; line-height: 1.6; white-space: pre-line; }
+        .m-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
+        .review-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 18px; font-size: 11px; margin: 12px 0 16px; padding: 12px; background: #fff; border: 2px dashed var(--ink); }
+        .review-meta b { font-family: var(--display); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; display: block; color: var(--muted); }
+
+        /* Footer */
+        footer { margin-bottom: 20px; padding-top: 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; display: flex; justify-content: space-between; gap: 8px; border-top: 3px double var(--ink); flex-wrap: wrap; }
+        footer p { margin: 0; }
+
+        /* Motion */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pop { from { transform: scale(.92); opacity: 0; } }
+        @keyframes tap-pulse { 0%, 100% { box-shadow: 4px 4px 0 var(--yellow), 0 0 0 0 rgba(255,212,0,.5); } 60% { box-shadow: 4px 4px 0 var(--yellow), 0 0 0 14px rgba(255,212,0,0); } }
+        .tally .btn.ready { animation: tap-pulse 2.4s ease-in-out infinite; }
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .masthead .burst, .tally .btn.ready { animation: none; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .profile-card { position: relative; top: 0; }
+            .intro-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 1024px) {
+            .masthead .slab { display: none; }
+            .mast-text, .mast-actions { padding-right: 0; }
+        }
+        @media (max-width: 768px) {
+            .sheet { margin: 6px; }
+            .wrap { padding: 32px 16px; }
+            .px { margin-left: 16px; margin-right: 16px; }
+            .mast-inner { padding: 20px 18px; }
+            .mast-row { gap: 14px; }
+            .logo-seal { width: 64px; height: 64px; }
+            .mast-title { font-size: 30px; }
+            .mast-title .sub { font-size: 20px; }
+            .card { padding: 22px 16px; }
+            .giant-outline { display: none; }
+            .drg-head { display: none; }
+            .drg-row { grid-template-columns: 44px 1fr; }
+            .drg-row > div + div { border-left: 0; }
+            .drg-no { grid-row: span 2; border-right: 2px solid var(--ink); font-size: 17px; }
+            .drg-input { padding-top: 0 !important; }
+            .sum-stats { grid-template-columns: 1fr; }
+            .review-meta { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 430px) {
+            .stats { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+            .stat .num { font-size: 28px; }
+            .two { grid-template-columns: 1fr; }
+            .tally { padding: 10px 12px; gap: 10px; }
+            .tally .t-num { font-size: 20px; }
+            .tally .t-actions { width: 100%; flex-wrap: nowrap !important; }
+            .tally .t-actions .btn-lg { flex: 1; padding: 11px 14px; font-size: 13px; }
+            .tally .t-clear span { display: none; }
+            .drg-input .num-field { max-width: 160px; margin-left: auto; }
+        }
+        @media (hover: none) and (pointer: coarse) {
+            .btn:hover { transform: none; box-shadow: 4px 4px 0 var(--ink); }
+        }
+    </style>
+</head>
+<body>
+<div class="sheet">
+
+    <!-- Technical meta strip -->
+    <div class="meta-strip px">
+        <div><i class="fas fa-crosshairs"></i> JOB-NO..2027-SKR-HTPN //.REV01.
+            <span class="cmyk"><b style="background:var(--red)">C</b><b style="background:var(--yellow);color:var(--ink)">M</b><b style="background:var(--blue)">Y</b><b style="background:var(--ink)">K</b></span>
+        </div>
+        <div><span class="tag-box">PORTAL SKR</span> KKM.600-1/4/20 JLD 8 (27)</div>
+    </div>
+
+    <!-- Masthead -->
+    <header class="masthead px">
+        <div class="hazard"></div>
+        <div class="burst"></div>
+        <div class="slab"><span>SKR</span></div>
+        <div class="mast-inner">
+            <div class="mast-row">
+                <img src="images/logo-htpn.png" alt="Hospital Tengku Permaisuri Norashikin (HTPN) Kajang" class="logo-seal" width="96" height="96">
+                <div class="mast-text">
+                    <div class="mast-tags">
+                        <span class="tag-red">SULIT / RASMI</span>
+                        <span class="org">Healthcare Intelligence Office HTPN Kajang</span>
+                    </div>
+                    <h1 class="mast-title">SKR HTPN <span class="sub">E-RUJUKAN</span></h1>
+                    <p class="mast-sub" data-i18n="appSub"></p>
+                </div>
+            </div>
+            <div class="mast-actions">
+                <button id="nav_form" class="btn btn-ghost is-active" onclick="showView('form')"><i class="fas fa-pen-to-square"></i> <span data-i18n="navForm"></span></button>
+                <button id="nav_summary" class="btn btn-ghost" onclick="showView('summary')"><i class="fas fa-table"></i> <span data-i18n="navSummary"></span></button>
+                <button class="btn btn-ghost" onclick="toggleLanguage()" title="Language / Bahasa"><i class="fas fa-language"></i> <span data-i18n="langBtn"></span></button>
+            </div>
+        </div>
+        <div class="hazard"></div>
+    </header>
+
+    <main class="wrap">
+
+        <!-- ================= VIEW: FORM ================= -->
+        <section id="view_form">
+
+            <!-- Intro / letter context -->
+            <div class="card intro reveal">
+                <span class="ribbon blue" data-i18n="letterRibbon"></span>
+                <div class="stamp" style="right:22px;top:-26px;background:var(--paper-2)">SKR<small>2027</small></div>
+                <div class="intro-grid">
+                    <div>
+                        <span class="kicker" data-i18n="introKicker"></span>
+                        <h2 class="h-display" style="font-size:30px;margin-top:6px" data-i18n="introTitle"></h2>
+                        <p data-i18n="introBody"></p>
+                        <div class="hpua">
+                            <span class="chip ink">PPUM · UM</span>
+                            <span class="chip ink">HSAAS · UPM</span>
+                            <span class="chip ink">HTABTAR · UKM</span>
+                        </div>
+                    </div>
+                    <div class="stats">
+                        <div class="stat s-blue"><p class="lbl" style="color:var(--blue);margin:0">DRG</p><p class="num stat-num" data-target="31" style="margin:4px 0 0">0</p></div>
+                        <div class="stat s-ink"><p class="lbl" style="margin:0">HPUA</p><p class="num stat-num" data-target="3" style="margin:4px 0 0">0</p></div>
+                        <div class="stat s-red"><p class="lbl" style="color:var(--red);margin:0" data-i18n="daysLeft"></p><p id="days_left" class="num" style="margin:4px 0 0">–</p></div>
+                    </div>
+                </div>
+                <div class="notice" style="margin-top:24px">
+                    <b class="t"><i class="fas fa-circle-info"></i> <span data-i18n="howTitle"></span></b>
+                    <span data-i18n-html="howBody"></span>
+                </div>
+            </div>
+
+            <div class="form-grid">
+
+                <!-- 01 / Profile -->
+                <div class="card profile-card reveal">
+                    <span class="ribbon yellow" data-i18n="ribbon01"></span>
+                    <div class="card-head">
+                        <h3 class="h-display" style="font-size:18px"><i class="fas fa-user-doctor" style="color:var(--red)"></i> <span data-i18n="profileTitle"></span></h3>
+                        <p class="small" data-i18n="profileSub"></p>
+                    </div>
+                    <div class="stack">
+                        <div>
+                            <label class="field-label" for="p_dept"><i class="fas fa-hospital"></i> <span data-i18n="dept"></span></label>
+                            <select id="p_dept" class="field" onchange="onDeptChange()"></select>
+                        </div>
+                        <div id="p_dept_other_wrap" hidden>
+                            <label class="field-label" for="p_dept_other" data-i18n="deptOther"></label>
+                            <input id="p_dept_other" class="field" maxlength="80" data-i18n-ph="deptOtherPh" oninput="saveDraft()">
+                        </div>
+                        <div>
+                            <label class="field-label" for="p_name"><i class="fas fa-id-badge"></i> <span data-i18n="name"></span></label>
+                            <input id="p_name" class="field" maxlength="120" autocomplete="name" data-i18n-ph="namePh" oninput="saveDraft()">
+                        </div>
+                        <div>
+                            <label class="field-label" for="p_post" data-i18n="post"></label>
+                            <input id="p_post" class="field" maxlength="120" data-i18n-ph="postPh" oninput="saveDraft()">
+                        </div>
+                        <div>
+                            <label class="field-label" for="p_email"><i class="fas fa-envelope"></i> <span data-i18n="email"></span></label>
+                            <input id="p_email" type="email" class="field" maxlength="120" autocomplete="email" placeholder="nama@moh.gov.my" oninput="saveDraft()">
+                        </div>
+                        <div class="two">
+                            <div>
+                                <label class="field-label" for="p_phone"><span data-i18n="phone"></span> <span class="opt" data-i18n="optional"></span></label>
+                                <input id="p_phone" type="tel" class="field" maxlength="20" placeholder="01x-xxxxxxx" oninput="saveDraft()">
+                            </div>
+                            <div>
+                                <label class="field-label" for="p_code"><i class="fas fa-key"></i> <span data-i18n="code"></span></label>
+                                <input id="p_code" type="password" class="field" maxlength="40" autocomplete="off" data-i18n-ph="codePh">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;margin-top:14px"><span class="scribble" data-i18n="scribble1"></span></div>
+                </div>
+
+                <!-- 02 / DRG estimates -->
+                <div class="card reveal">
+                    <span class="ribbon" data-i18n="ribbon02"></span>
+                    <div class="giant-outline" style="right:16px;top:8px;font-size:90px">DRG</div>
+                    <div class="card-head" style="position:relative">
+                        <h3 class="h-display" style="font-size:18px" data-i18n="drgTitle"></h3>
+                        <p class="small" data-i18n="drgSub"></p>
+                    </div>
+
+                    <div class="toolbar">
+                        <div class="seg" role="group">
+                            <button id="f_mine" class="is-active" onclick="setFilter('mine')" data-i18n="filterMine"></button>
+                            <button id="f_all" onclick="setFilter('all')" data-i18n="filterAll"></button>
+                        </div>
+                        <input id="drg_search" class="field search" type="search" data-i18n-ph="searchPh" oninput="renderDrgList()">
+                    </div>
+
+                    <div class="drg-list" id="drg_list"></div>
+
+                    <div style="margin-top:24px">
+                        <label class="field-label" for="p_notes"><i class="fas fa-comment-medical"></i> <span data-i18n="notes"></span> <span class="opt" data-i18n="optional"></span></label>
+                        <textarea id="p_notes" class="field" rows="3" maxlength="1000" data-i18n-ph="notesPh" oninput="saveDraft()"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky tally -->
+            <div class="tally">
+                <div class="t-stats">
+                    <div><span class="t-num" id="t_filled">0</span><span class="t-lbl" data-i18n="tFilled"></span></div>
+                    <div><span class="t-num" id="t_total">0</span><span class="t-lbl" data-i18n="tTotal"></span></div>
+                </div>
+                <div class="t-actions" style="display:flex;gap:12px;flex-wrap:wrap">
+                    <button class="btn btn-ghost t-clear" title="Kosongkan / Clear" style="background:transparent;color:#fff;border-color:#fff;box-shadow:4px 4px 0 #fff" onclick="resetValues()"><i class="fas fa-eraser"></i> <span data-i18n="resetBtn"></span></button>
+                    <button id="review_btn" class="btn btn-yellow btn-lg" onclick="openReview()"><i class="fas fa-paper-plane"></i> <span data-i18n="reviewBtn"></span></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: SUMMARY ================= -->
+        <section id="view_summary" hidden>
+            <div class="card" style="background:var(--blue);color:#fff">
+                <span class="ribbon yellow" data-i18n="sumRibbon"></span>
+                <div class="giant-outline" style="right:16px;bottom:0;font-size:90px;-webkit-text-stroke-color:rgba(255,255,255,.18)">HTPN</div>
+                <div class="sum-head" style="position:relative;margin-top:6px">
+                    <div>
+                        <h2 class="h-display" style="font-size:28px" data-i18n="sumTitle"></h2>
+                        <p style="font-size:12px;color:var(--yellow);margin:8px 0 0"><span data-i18n="sumUpdated"></span> <b id="sum_updated">–</b></p>
+                    </div>
+                    <button class="btn btn-yellow" onclick="loadSummary()"><i class="fas fa-sync-alt"></i> <span data-i18n="reload"></span></button>
+                </div>
+            </div>
+
+            <div class="sum-stats" style="margin-top:36px">
+                <div class="stat s-ink"><p class="lbl" style="margin:0" data-i18n="sumSubs"></p><p id="sum_subs" class="num" style="margin:4px 0 0">0</p></div>
+                <div class="stat s-blue"><p class="lbl" style="color:var(--blue);margin:0" data-i18n="sumCases"></p><p id="sum_cases" class="num" style="margin:4px 0 0;color:var(--blue)">0</p></div>
+                <div class="stat s-red"><p class="lbl" style="color:var(--red);margin:0" data-i18n="sumEmpty"></p><p id="sum_empty" class="num" style="margin:4px 0 0;color:var(--red)">31</p></div>
+            </div>
+
+            <div class="card" style="margin-bottom:40px">
+                <span class="ribbon" data-i18n="sumKkmRibbon"></span>
+                <div class="card-head"><h3 class="h-display" style="font-size:16px" data-i18n="sumKkmTitle"></h3><p class="small" data-i18n="sumKkmSub"></p></div>
+                <div class="table-wrap" style="max-height:620px;overflow:auto">
+                    <table class="table-brut">
+                        <thead><tr><th>BIL.</th><th>DIAGNOSIS RELATED GROUP (DRG)</th><th data-i18n="thSpec"></th><th style="text-align:right">HTPN / <span data-i18n="perMonth"></span></th></tr></thead>
+                        <tbody id="sum_table"></tbody>
+                        <tfoot><tr><td colspan="3" data-i18n="total"></td><td class="r" id="sum_table_total">0</td></tr></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <span class="ribbon blue" data-i18n="sumDeptRibbon"></span>
+                <div class="card-head"><h3 class="h-display" style="font-size:16px" data-i18n="sumDeptTitle"></h3><p class="small" data-i18n="sumDeptSub"></p></div>
+                <div class="table-wrap">
+                    <table class="table-brut">
+                        <thead><tr><th data-i18n="thTime"></th><th data-i18n="dept"></th><th data-i18n="thBy"></th><th>ID</th><th style="text-align:right" data-i18n="thCases"></th></tr></thead>
+                        <tbody id="sum_depts"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="px">
+        <p>PORTAL SKR HTPN e-RUJUKAN &copy; 2026 // <span data-i18n="footerOrg"></span></p>
+        <p data-i18n="footerSupport"></p>
+    </footer>
+</div>
+
+<!-- Notification modal -->
+<div id="modal" class="modal" onclick="if(event.target===this && !this.dataset.lock) closeModal()">
+    <div class="modal-box">
+        <div id="m_icon" class="m-icon"></div>
+        <h3 id="m_title" class="h-display" style="font-size:18px"></h3>
+        <p id="m_msg"></p>
+        <button id="m_ok" class="btn btn-ink btn-block" onclick="closeModal()">OK</button>
+    </div>
+</div>
+
+<!-- Review modal -->
+<div id="review" class="modal" onclick="if(event.target===this) closeReview()">
+    <div class="modal-box wide">
+        <span class="chip red" data-i18n="reviewChip"></span>
+        <h3 class="h-display" style="font-size:22px;margin-top:8px" data-i18n="reviewTitle"></h3>
+        <div class="review-meta" id="review_meta"></div>
+        <div class="table-wrap" style="max-height:45svh;overflow:auto">
+            <table class="table-brut">
+                <thead><tr><th>BIL.</th><th>DRG</th><th style="text-align:right" data-i18n="thCases"></th></tr></thead>
+                <tbody id="review_body"></tbody>
+                <tfoot><tr><td colspan="2" data-i18n="total"></td><td class="r" id="review_total">0</td></tr></tfoot>
+            </table>
+        </div>
+        <p id="review_warn" class="small" style="color:var(--red)"></p>
+        <div class="m-actions">
+            <button class="btn btn-white" onclick="closeReview()"><i class="fas fa-arrow-left"></i> <span data-i18n="back"></span></button>
+            <button id="submit_btn" class="btn btn-red btn-lg" onclick="submitForm()"><i class="fas fa-paper-plane"></i> <span data-i18n="submitBtn"></span></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= Configuration =================
+    // Paste the Apps Script Web App URL here after deploying (see README.md).
+    const API_URL = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
+    const DEADLINE = new Date("2026-11-20T23:59:59+08:00");
+
+    // DRG list, exactly as in the KKM template (Bil. Kes SKR Hospital KKM).
+    const DRGS = [
+        [1, "Other Respiratory System Operating Room Procedures", ["Perubatan Am", "Perubatan Respiratori", "Pembedahan Kardiotorasik", "Pembedahan Pediatrik"]],
+        [2, "Other Digestive System Operating Room Procedures", ["Pembedahan Am", "Pembedahan Upper Gastrointesinal Tract", "Pembedahan Pediatrik"]],
+        [3, "Cholecystectomy Except By Laparoscope Without Choledochoenterostomy", ["Pembedahan Am", "Pembedahan Hepatobiliari"]],
+        [4, "Appendectomy Without Complicated Main Condition", ["Pembedahan Am"]],
+        [5, "Other Hernia Procedures", ["Pembedahan Am"]],
+        [6, "Anorectal & Stomal Procedures", ["Pembedahan Am", "Pembedahan Kolorektal"]],
+        [7, "Soft Tissue Procedures", ["Pembedahan Am", "Ortopedik"]],
+        [8, "Skin & Subcutaneous Tissue Procedures", ["Pembedahan Am", "Ortopedik", "Pembedahan Plastik"]],
+        [9, "Other Operative Obstetrics Procedures", ["Obstetrik & Ginekologi"]],
+        [10, "Uterine & Adnexa Procedures", ["Obstetrik & Ginekologi"]],
+        [11, "Cervix, Vagina And Vulva Procedures", ["Obstetrik & Ginekologi"]],
+        [12, "Advanced Uterine And Adnexa Procedures", ["Obstetrik & Ginekologi"]],
+        [13, "Ischaemic Cerebrovascular Disease", ["Perubatan Am", "Neurologi"]],
+        [14, "Nonspecific Cerebrovascular Disorders", ["Perubatan Am", "Neurologi"]],
+        [15, "Seizures", ["Perubatan Am", "Neurologi", "Pediatrik"]],
+        [16, "Dengue", ["Perubatan Am"]],
+        [17, "Viral Illness", ["Perubatan Am"]],
+        [18, "Ear, Nose, Mouth & Throat Infections", ["Otorinolaringologi"]],
+        [19, "Bronchitis & Asthma", ["Perubatan Am", "Perubatan Respiratori"]],
+        [20, "Pneumonia", ["Perubatan Am", "Perubatan Respiratori"]],
+        [21, "Chronic Obstructive Pulmonary Disease", ["Perubatan Am", "Perubatan Respiratori"]],
+        [22, "Coronary Artery Disease", ["Perubatan Am", "Kardiologi"]],
+        [23, "Heart Failure & Shock", ["Perubatan Am", "Kardiologi"]],
+        [24, "Red Blood Cell Disorders", ["Perubatan Am", "Hematologi Klinikal", "Pediatrik Am"]],
+        [25, "Esophagitis, Gastroenteritis & Miscellaneous Digestive Disorders", ["Gastroenterologi & Hepatologi", "Pembedahan Am"]],
+        [26, "Other Gastrointestinal System Disorders & Infections", ["Gastroenterologi & Hepatologi", "Pembedahan Am"]],
+        [27, "Gastrointestinal Malignancy", ["Gastroenterologi & Hepatologi", "Pembedahan Am"]],
+        [28, "Kidney & Urinary Tract Infections", ["Urologi", "Pembedahan Am"]],
+        [29, "Female Reproductive System Malignancy", ["Obstetrik & Ginekologi"]],
+        [30, "Musculoskeletal Infections", ["Ortopedik", "Pediatrik Am"]],
+        [31, "Respiratory Infections & Inflammations Except Pneumonia", ["Perubatan Am", "Perubatan Respiratori"]]
+    ];
+
+    // Departments shown in the dropdown. `match` = which KKM specialties belong to it.
+    // The value is what gets saved to the sheet, so it stays in Malay.
+    const DEPTS = [
+        { v: "Perubatan Am", match: ["Perubatan Am"] },
+        { v: "Perubatan Respiratori", match: ["Perubatan Respiratori"] },
+        { v: "Kardiologi", match: ["Kardiologi"] },
+        { v: "Neurologi", match: ["Neurologi"] },
+        { v: "Gastroenterologi & Hepatologi", match: ["Gastroenterologi & Hepatologi"] },
+        { v: "Hematologi Klinikal", match: ["Hematologi Klinikal"] },
+        { v: "Pembedahan Am", match: ["Pembedahan Am"] },
+        { v: "Pembedahan Upper Gastrointesinal Tract", match: ["Pembedahan Upper Gastrointesinal Tract"] },
+        { v: "Pembedahan Hepatobiliari", match: ["Pembedahan Hepatobiliari"] },
+        { v: "Pembedahan Kolorektal", match: ["Pembedahan Kolorektal"] },
+        { v: "Pembedahan Kardiotorasik", match: ["Pembedahan Kardiotorasik"] },
+        { v: "Pembedahan Plastik", match: ["Pembedahan Plastik"] },
+        { v: "Pembedahan Pediatrik", match: ["Pembedahan Pediatrik"] },
+        { v: "Ortopedik", match: ["Ortopedik"] },
+        { v: "Obstetrik & Ginekologi", match: ["Obstetrik & Ginekologi"] },
+        { v: "Pediatrik", match: ["Pediatrik", "Pediatrik Am"] },
+        { v: "Otorinolaringologi", match: ["Otorinolaringologi"] },
+        { v: "Urologi", match: ["Urologi"] },
+        { v: "Keseluruhan Hospital (HIO / Pentadbiran)", match: "ALL", key: "deptAll" },
+        { v: "Lain-lain", match: [], key: "deptOtherOpt" }
+    ];
+
+    // ================= Translations =================
+    const I18N = {
+        ms: {
+            langBtn: "English",
+            appSub: "Portal Anggaran Bilangan Kes Rujukan Inisiatif Sinergi Kesihatan Rakyat (SKR) 2027 — Hospital Tengku Permaisuri Norashikin, Kajang",
+            navForm: "Borang", navSummary: "Ringkasan HTPN",
+            letterRibbon: "Surat BPP KKM // 6 Nov 2026",
+            introKicker: "Permohonan Bahagian Perkembangan Perubatan //",
+            introTitle: "Anggaran Kes Rujukan ke HPUA",
+            introBody: "BPP KKM memohon anggaran bilangan kes rujukan SETIAP BULAN dari HTPN ke Hospital Pengajar Universiti Awam (HPUA) bagi 31 Diagnosis Related Group (DRG) yang disenarai pendek untuk SKR Fasa 1. Isikan angka mentah jabatan anda — portal akan menjumlahkan semua jabatan terus ke dalam format Google Sheets KKM.",
+            daysLeft: "Hari lagi",
+            howTitle: "Cara mengisi:",
+            howBody: " (1) Pilih jabatan &amp; isi maklumat anda. (2) Masukkan <b>anggaran bilangan kes sebulan</b> bagi setiap DRG yang dirujuk jabatan anda. Biarkan kosong jika tiada. (3) Semak &amp; hantar. Serahan baharu daripada jabatan yang sama akan <b>menggantikan</b> serahan terdahulu. Tarikh akhir: <b>20 November 2026 (Jumaat)</b>.",
+            ribbon01: "01 / Maklumat Pengisi",
+            profileTitle: "Maklumat Pengisi",
+            profileSub: "Seorang wakil bagi setiap jabatan / unit.",
+            dept: "Jabatan / Unit", deptOther: "Nyatakan jabatan / unit", deptOtherPh: "Cth: Unit Rawatan Rapi",
+            deptSelect: "— Pilih jabatan —",
+            deptAll: "Keseluruhan Hospital (HIO / Pentadbiran)", deptOtherOpt: "Lain-lain (nyatakan)",
+            name: "Nama Penuh", namePh: "Dr. Nama Pegawai",
+            post: "Jawatan", postPh: "Cth: Pakar Perubatan UD54 / KJ",
+            email: "E-mel Rasmi", phone: "No. Telefon", optional: "(pilihan)",
+            code: "Kod Akses", codePh: "Daripada HIO",
+            scribble1: "isi & semak ✓",
+            ribbon02: "02 / Anggaran Kes Sebulan",
+            drgTitle: "Anggaran Bilangan Kes Rujukan (Setiap Bulan)",
+            drgSub: "Angka mentah anggaran kes sebulan yang akan dirujuk dari HTPN ke HPUA. Nombor bulat sahaja.",
+            filterMine: "DRG Jabatan Saya", filterAll: "Semua 31 DRG",
+            searchPh: "Cari DRG / kepakaran…",
+            thDrg: "Diagnosis Related Group (DRG) · Kepakaran Terlibat", thEst: "Kes / Bulan",
+            pickDept: "Pilih jabatan anda di kotak 01 untuk melihat DRG yang berkaitan, atau tekan \"Semua 31 DRG\".",
+            noMatch: "Tiada DRG sepadan.",
+            notes: "Catatan", notesPh: "Cth: anggaran berdasarkan data rujukan Jan–Okt 2026",
+            tFilled: "DRG diisi", tTotal: "Jumlah kes / bulan",
+            resetBtn: "Kosongkan", reviewBtn: "Semak & Hantar",
+            reviewChip: "Serahan Rasmi", reviewTitle: "Semak Sebelum Hantar",
+            back: "Kembali", submitBtn: "Hantar ke Google Sheets",
+            total: "Jumlah", thCases: "Kes / Bulan",
+            unfilledWarn: "{n} DRG dalam senarai jabatan anda tidak diisi dan akan direkod sebagai tiada (kosong).",
+            sumRibbon: "Ringkasan Langsung", sumTitle: "Ringkasan Anggaran HTPN", sumUpdated: "Dikemaskini:", reload: "Muat Semula",
+            sumSubs: "Jabatan Telah Hantar", sumCases: "Jumlah Kes / Bulan", sumEmpty: "DRG Belum Ada Data",
+            sumKkmRibbon: "Format KKM", sumKkmTitle: "Lajur HTPN dalam Format KKM", sumKkmSub: "Jumlah semua serahan aktif — sama seperti yang ditulis ke helaian \"Format KKM\".",
+            thSpec: "Kepakaran Terlibat", perMonth: "Bulan",
+            sumDeptRibbon: "Serahan Aktif", sumDeptTitle: "Serahan Mengikut Jabatan", sumDeptSub: "Hanya serahan terkini bagi setiap jabatan dikira.",
+            thTime: "Tarikh & Masa", thBy: "Diisi Oleh", noSubs: "Belum ada serahan.",
+            loading: "Memuatkan…",
+            footerOrg: "Jabatan Kesihatan Negeri Selangor",
+            footerSupport: "Sokongan teknikal: ferwahn@moh.gov.my",
+            // Messages
+            errTitle: "Maklumat Tidak Lengkap",
+            errDept: "Sila pilih jabatan / unit.", errDeptOther: "Sila nyatakan jabatan / unit.",
+            errName: "Sila isi nama penuh.", errPost: "Sila isi jawatan.", errEmail: "Sila isi e-mel rasmi yang sah.",
+            errNone: "Sila isi sekurang-kurangnya satu anggaran DRG (0 juga diterima).",
+            sending: "Menghantar…", sendingMsg: "Data sedang ditulis ke Google Sheets. Jangan tutup halaman ini.",
+            okTitle: "Berjaya Dihantar", okMsg: "ID Serahan: {id}\nJumlah: {total} kes / bulan bagi {n} DRG.{replaced}\n\nTerima kasih.",
+            okReplaced: "\nSerahan terdahulu jabatan ini telah digantikan.",
+            failTitle: "Gagal Dihantar", connError: "Tidak dapat berhubung dengan pelayan. Semak sambungan internet dan cuba lagi.",
+            codeError: "Kod akses tidak sah. Dapatkan kod daripada HIO HTPN.",
+            notConfigured: "Portal belum disambungkan ke Google Sheets (API_URL belum ditetapkan). Hubungi HIO.",
+            resetConfirm: "Kosongkan semua angka yang telah diisi?",
+            draftTitle: "Draf Dipulihkan", draftRestored: "Angka yang anda isi sebelum ini telah dipulihkan daripada pelayar ini."
+        },
+        en: {
+            langBtn: "Bahasa Melayu",
+            appSub: "Estimated Referral Case Portal for the Sinergi Kesihatan Rakyat (SKR) 2027 Initiative — Hospital Tengku Permaisuri Norashikin, Kajang",
+            navForm: "Form", navSummary: "HTPN Summary",
+            letterRibbon: "MOH BPP Letter // 6 Nov 2026",
+            introKicker: "Request from the Medical Development Division //",
+            introTitle: "Estimated Referrals to Public University Hospitals",
+            introBody: "MOH's BPP requests the estimated number of cases referred EACH MONTH from HTPN to the Public University Teaching Hospitals (HPUA) for the 31 shortlisted Diagnosis Related Groups (DRG) in SKR Phase 1. Enter your department's raw numbers — the portal sums every department straight into MOH's Google Sheets format.",
+            daysLeft: "Days left",
+            howTitle: "How to fill:",
+            howBody: " (1) Choose your department &amp; fill in your details. (2) Enter the <b>estimated number of cases per month</b> for every DRG your department refers. Leave blank if none. (3) Review &amp; submit. A new submission from the same department <b>replaces</b> the previous one. Deadline: <b>Friday, 20 November 2026</b>.",
+            ribbon01: "01 / Respondent",
+            profileTitle: "Respondent Details",
+            profileSub: "One representative per department / unit.",
+            dept: "Department / Unit", deptOther: "Specify department / unit", deptOtherPh: "e.g. Intensive Care Unit",
+            deptSelect: "— Choose department —",
+            deptAll: "Whole Hospital (HIO / Administration)", deptOtherOpt: "Other (specify)",
+            name: "Full Name", namePh: "Dr. Officer Name",
+            post: "Position", postPh: "e.g. Physician UD54 / HOD",
+            email: "Official Email", phone: "Phone No.", optional: "(optional)",
+            code: "Access Code", codePh: "From HIO",
+            scribble1: "fill & check ✓",
+            ribbon02: "02 / Monthly Case Estimates",
+            drgTitle: "Estimated Referral Cases (Per Month)",
+            drgSub: "Raw estimate of cases per month to be referred from HTPN to the HPUA. Whole numbers only.",
+            filterMine: "My Department's DRGs", filterAll: "All 31 DRGs",
+            searchPh: "Search DRG / specialty…",
+            thDrg: "Diagnosis Related Group (DRG) · Specialties Involved", thEst: "Cases / Month",
+            pickDept: "Choose your department in box 01 to see its DRGs, or tap \"All 31 DRGs\".",
+            noMatch: "No matching DRG.",
+            notes: "Notes", notesPh: "e.g. estimate based on Jan–Oct 2026 referral data",
+            tFilled: "DRGs filled", tTotal: "Total cases / month",
+            resetBtn: "Clear", reviewBtn: "Review & Submit",
+            reviewChip: "Official Submission", reviewTitle: "Review Before Submitting",
+            back: "Back", submitBtn: "Send to Google Sheets",
+            total: "Total", thCases: "Cases / Month",
+            unfilledWarn: "{n} DRGs in your department's list are blank and will be recorded as none (empty).",
+            sumRibbon: "Live Summary", sumTitle: "HTPN Estimate Summary", sumUpdated: "Updated:", reload: "Reload",
+            sumSubs: "Departments Submitted", sumCases: "Total Cases / Month", sumEmpty: "DRGs With No Data",
+            sumKkmRibbon: "MOH Format", sumKkmTitle: "HTPN Column in MOH Format", sumKkmSub: "Sum of all active submissions — the same figures written to the \"Format KKM\" sheet.",
+            thSpec: "Specialties Involved", perMonth: "Month",
+            sumDeptRibbon: "Active Submissions", sumDeptTitle: "Submissions by Department", sumDeptSub: "Only each department's latest submission is counted.",
+            thTime: "Date & Time", thBy: "Filled By", noSubs: "No submissions yet.",
+            loading: "Loading…",
+            footerOrg: "Selangor State Health Department",
+            footerSupport: "Technical support: ferwahn@moh.gov.my",
+            errTitle: "Incomplete Details",
+            errDept: "Please choose a department / unit.", errDeptOther: "Please specify the department / unit.",
+            errName: "Please enter your full name.", errPost: "Please enter your position.", errEmail: "Please enter a valid official email.",
+            errNone: "Please fill in at least one DRG estimate (0 is accepted).",
+            sending: "Sending…", sendingMsg: "Writing to Google Sheets. Please keep this page open.",
+            okTitle: "Submitted", okMsg: "Submission ID: {id}\nTotal: {total} cases / month across {n} DRGs.{replaced}\n\nThank you.",
+            okReplaced: "\nThis department's previous submission has been replaced.",
+            failTitle: "Submission Failed", connError: "Cannot reach the server. Check your internet connection and try again.",
+            codeError: "Invalid access code. Get the code from HIO HTPN.",
+            notConfigured: "The portal is not connected to Google Sheets yet (API_URL not set). Contact HIO.",
+            resetConfirm: "Clear all the numbers you have entered?",
+            draftTitle: "Draft Restored", draftRestored: "The numbers you entered earlier have been restored from this browser."
+        }
+    };
+
+    // ================= State =================
+    let lang = "ms";
+    let filter = "mine";
+    const values = {};          // { drgNo: "12" } — strings, blank = not filled
+    const DRAFT_KEY = "skr_htpn_draft_v1";
+
+    const $ = id => document.getElementById(id);
+    const t = (k, vars) => {
+        let s = (I18N[lang] && I18N[lang][k]) ?? I18N.ms[k] ?? k;
+        if (vars) Object.keys(vars).forEach(v => { s = s.split(`{${v}}`).join(vars[v]); });
+        return s;
+    };
+    const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const fmt = n => Number(n || 0).toLocaleString("en-MY");
+    function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+    // ================= Language =================
+    function applyLanguage() {
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+        document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+        document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+        populateDepts();
+        renderDrgList();
+        if (lastSummary) renderSummary(lastSummary);
+    }
+    function toggleLanguage() {
+        lang = lang === "ms" ? "en" : "ms";
+        storageSet("skr_lang", lang);
+        applyLanguage();
+    }
+
+    // ================= Departments =================
+    function populateDepts() {
+        const sel = $("p_dept");
+        const cur = sel.value;
+        sel.innerHTML = "";
+        sel.add(new Option(t("deptSelect"), ""));
+        DEPTS.forEach(d => sel.add(new Option(d.key ? t(d.key) : d.v, d.v)));
+        sel.value = cur;
+    }
+    function currentDept() { return DEPTS.find(d => d.v === $("p_dept").value); }
+    function onDeptChange() {
+        const d = currentDept();
+        $("p_dept_other_wrap").hidden = !(d && d.v === "Lain-lain");
+        if (d && (d.match === "ALL" || d.v === "Lain-lain")) setFilter("all", true);
+        else if (d) setFilter("mine", true);
+        renderDrgList();
+        saveDraft();
+    }
+    function deptMatches(drg) {
+        const d = currentDept();
+        if (!d) return false;
+        if (d.match === "ALL") return true;
+        return drg[2].some(s => d.match.includes(s));
+    }
+
+    // ================= DRG list =================
+    function setFilter(f, silent) {
+        filter = f;
+        $("f_mine").classList.toggle("is-active", f === "mine");
+        $("f_all").classList.toggle("is-active", f === "all");
+        if (!silent) renderDrgList();
+    }
+    function visibleDrgs() {
+        const q = $("drg_search").value.trim().toLowerCase();
+        return DRGS.filter(drg => {
+            if (filter === "mine" && !deptMatches(drg) && !values[drg[0]]) return false;
+            if (!q) return true;
+            return (drg[0] + " " + drg[1] + " " + drg[2].join(" ")).toLowerCase().includes(q);
+        });
+    }
+    function renderDrgList() {
+        const d = currentDept();
+        const mine = d && d.match !== "ALL" ? d.match : [];
+        const list = visibleDrgs();
+        let html = `<div class="drg-head"><div>Bil.</div><div>${esc(t("thDrg"))}</div><div style="text-align:right">${esc(t("thEst"))}</div></div>`;
+        if (filter === "mine" && !d) {
+            html += `<div class="empty-row"><i class="fas fa-hand-point-left"></i> ${esc(t("pickDept"))}</div>`;
+        } else if (!list.length) {
+            html += `<div class="empty-row">${esc(t("noMatch"))}</div>`;
+        } else {
+            html += list.map(([no, name, specs]) => {
+                const v = values[no] ?? "";
+                return `<div class="drg-row${v !== "" ? " filled" : ""}" id="row_${no}">
+                    <div class="drg-no">${no}</div>
+                    <div><div class="drg-name">${esc(name)}</div>
+                        <div class="specs">${specs.map(s => `<span class="spec${mine.includes(s) ? " mine" : ""}">${esc(s)}</span>`).join("")}</div></div>
+                    <div class="drg-input"><input class="num-field" type="number" inputmode="numeric" min="0" max="99999" step="1"
+                        placeholder="–" aria-label="DRG ${no}" value="${esc(v)}" data-no="${no}" oninput="onValue(this)"></div>
+                </div>`;
+            }).join("");
+        }
+        $("drg_list").innerHTML = html;
+        updateTally();
+    }
+    function onValue(el) {
+        const no = +el.dataset.no;
+        let v = el.value.replace(/[^\d]/g, "");
+        if (v.length > 5) v = v.slice(0, 5);
+        if (v !== "" ) v = String(parseInt(v, 10));
+        if (el.value !== v) el.value = v;
+        if (v === "") delete values[no]; else values[no] = v;
+        $("row_" + no).classList.toggle("filled", v !== "");
+        updateTally();
+        saveDraft();
+    }
+    function filledEntries() {
+        return DRGS.filter(d => values[d[0]] !== undefined && values[d[0]] !== "").map(d => ({ no: d[0], name: d[1], n: parseInt(values[d[0]], 10) }));
+    }
+    function updateTally() {
+        const f = filledEntries();
+        $("t_filled").textContent = f.length;
+        $("t_total").textContent = fmt(f.reduce((a, e) => a + e.n, 0));
+        $("review_btn").classList.toggle("ready", f.length > 0);
+    }
+    function resetValues() {
+        if (!filledEntries().length) return;
+        if (!confirm(t("resetConfirm"))) return;
+        Object.keys(values).forEach(k => delete values[k]);
+        renderDrgList();
+        saveDraft();
+    }
+
+    // ================= Draft (per browser) =================
+    function saveDraft() {
+        storageSet(DRAFT_KEY, JSON.stringify({
+            dept: $("p_dept").value, deptOther: $("p_dept_other").value, name: $("p_name").value,
+            post: $("p_post").value, email: $("p_email").value, phone: $("p_phone").value,
+            notes: $("p_notes").value, values
+        }));
+    }
+    function loadDraft() {
+        let d;
+        try { d = JSON.parse(storageGet(DRAFT_KEY) || "null"); } catch (e) { d = null; }
+        if (!d) return false;
+        $("p_dept").value = d.dept || "";
+        ["deptOther", "name", "post", "email", "phone", "notes"].forEach(k => {
+            const id = { deptOther: "p_dept_other", name: "p_name", post: "p_post", email: "p_email", phone: "p_phone", notes: "p_notes" }[k];
+            $(id).value = d[k] || "";
+        });
+        Object.assign(values, d.values || {});
+        $("p_dept_other_wrap").hidden = d.dept !== "Lain-lain";
+        const dep = currentDept();
+        if (dep && (dep.match === "ALL" || dep.v === "Lain-lain")) setFilter("all", true);
+        return Object.keys(values).length > 0;
+    }
+
+    // ================= Validation + review =================
+    function collectProfile() {
+        const dept = $("p_dept").value;
+        const other = $("p_dept_other").value.trim();
+        return {
+            dept: dept === "Lain-lain" ? (other ? "Lain-lain: " + other : "") : dept,
+            name: $("p_name").value.trim(),
+            post: $("p_post").value.trim(),
+            email: $("p_email").value.trim(),
+            phone: $("p_phone").value.trim(),
+            notes: $("p_notes").value.trim()
+        };
+    }
+    function validate() {
+        const p = collectProfile();
+        const checks = [
+            ["p_dept", !!$("p_dept").value, "errDept"],
+            ["p_dept_other", $("p_dept").value !== "Lain-lain" || !!$("p_dept_other").value.trim(), "errDeptOther"],
+            ["p_name", p.name.length >= 3, "errName"],
+            ["p_post", p.post.length >= 2, "errPost"],
+            ["p_email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email), "errEmail"]
+        ];
+        document.querySelectorAll(".field.invalid").forEach(el => el.classList.remove("invalid"));
+        const bad = checks.filter(c => !c[1]);
+        bad.forEach(c => $(c[0]).classList.add("invalid"));
+        const msgs = bad.map(c => "• " + t(c[2]));
+        if (!filledEntries().length) msgs.push("• " + t("errNone"));
+        if (msgs.length) {
+            showModal(t("errTitle"), msgs.join("\n"), "warning");
+            if (bad.length) $(bad[0][0]).scrollIntoView({ behavior: "smooth", block: "center" });
+            return null;
+        }
+        return p;
+    }
+    function openReview() {
+        const p = validate();
+        if (!p) return;
+        const f = filledEntries();
+        const deptLabel = (currentDept() && currentDept().key && currentDept().v !== "Lain-lain") ? t(currentDept().key) : p.dept;
+        $("review_meta").innerHTML = [
+            [t("dept"), deptLabel], [t("name"), p.name], [t("post"), p.post], [t("email"), p.email]
+        ].map(([k, v]) => `<div><b>${esc(k)}</b>${esc(v)}</div>`).join("");
+        $("review_body").innerHTML = f.map(e => `<tr><td>${e.no}</td><td>${esc(e.name)}</td><td class="r">${fmt(e.n)}</td></tr>`).join("");
+        $("review_total").textContent = fmt(f.reduce((a, e) => a + e.n, 0));
+        const d = currentDept();
+        const missing = d && d.match !== "ALL" ? DRGS.filter(x => deptMatches(x) && !(x[0] in values)).length : 0;
+        $("review_warn").textContent = missing ? t("unfilledWarn", { n: missing }) : "";
+        $("review").classList.add("open");
+    }
+    function closeReview() { $("review").classList.remove("open"); }
+
+    // ================= Backend =================
+    /** POST to Apps Script. Body is text/plain to avoid a CORS preflight. */
+    async function api(action, params = {}) {
+        if (!/^https:\/\/script\.google\.com\//.test(API_URL)) throw new Error(t("notConfigured"));
+        let res;
+        try {
+            const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action, code: $("p_code").value.trim() }, params)) });
+            res = await r.json();
+        } catch (err) {
+            throw new Error(t("connError"));
+        }
+        if (res.status === "AUTH") throw new Error(t("codeError"));
+        if (res.status !== "SUCCESS") throw new Error(res.message || t("connError"));
+        return res;
+    }
+
+    async function submitForm() {
+        const p = validate();
+        if (!p) return;
+        const f = filledEntries();
+        $("submit_btn").disabled = true;
+        closeReview();
+        showModal(t("sending"), t("sendingMsg"), "info", true);
+        try {
+            const res = await api("SUBMIT", { profile: p, entries: Object.fromEntries(f.map(e => [e.no, e.n])) });
+            storageSet("skr_last_id", res.id);
+            showModal(t("okTitle"), t("okMsg", {
+                id: res.id, total: fmt(res.total), n: res.count, replaced: res.replaced ? t("okReplaced") : ""
+            }), "success");
+            lastSummary = null;
+        } catch (err) {
+            showModal(t("failTitle"), err.message, "error");
+        } finally {
+            $("submit_btn").disabled = false;
+        }
+    }
+
+    // ================= Summary view =================
+    let lastSummary = null;
+    function showView(v) {
+        $("view_form").hidden = v !== "form";
+        $("view_summary").hidden = v !== "summary";
+        $("nav_form").classList.toggle("is-active", v === "form");
+        $("nav_summary").classList.toggle("is-active", v === "summary");
+        if (v === "summary" && !lastSummary) loadSummary();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    async function loadSummary() {
+        $("sum_table").innerHTML = `<tr><td colspan="4">${esc(t("loading"))}</td></tr>`;
+        $("sum_depts").innerHTML = `<tr><td colspan="5">${esc(t("loading"))}</td></tr>`;
+        try {
+            const res = await api("SUMMARY");
+            lastSummary = res;
+            renderSummary(res);
+        } catch (err) {
+            $("sum_table").innerHTML = `<tr><td colspan="4" style="color:var(--red)">${esc(err.message)}</td></tr>`;
+            $("sum_depts").innerHTML = `<tr><td colspan="5" style="color:var(--red)">${esc(err.message)}</td></tr>`;
+        }
+    }
+    function renderSummary(res) {
+        const totals = res.totals || {};
+        let grand = 0, empty = 0;
+        $("sum_table").innerHTML = DRGS.map(([no, name, specs]) => {
+            const n = Number(totals[no] || 0);
+            grand += n; if (!n) empty++;
+            return `<tr><td>${no}</td><td><b>${esc(name)}</b></td><td>${specs.map((s, i) => `(${String.fromCharCode(97 + i)}) ${esc(s)}`).join("<br>")}</td><td class="r">${n ? fmt(n) : "–"}</td></tr>`;
+        }).join("");
+        $("sum_table_total").textContent = fmt(grand);
+        const subs = res.submissions || [];
+        $("sum_depts").innerHTML = subs.length ? subs.map(s =>
+            `<tr><td>${esc(s.time)}</td><td><b>${esc(s.dept)}</b></td><td>${esc(s.name)}<br><span class="small">${esc(s.post)}</span></td><td><span class="chip white">${esc(s.id)}</span></td><td class="r">${fmt(s.total)}</td></tr>`
+        ).join("") : `<tr><td colspan="5">${esc(t("noSubs"))}</td></tr>`;
+        $("sum_updated").textContent = res.updated || "–";
+        countUp($("sum_subs"), subs.length);
+        countUp($("sum_cases"), grand);
+        countUp($("sum_empty"), empty);
+    }
+
+    // ================= Modal =================
+    function showModal(title, msg, type = "success", lock = false) {
+        const icons = { success: "fa-check", error: "fa-exclamation-triangle", warning: "fa-info-circle", info: "fa-spinner fa-spin" };
+        $("m_icon").className = "m-icon " + type;
+        $("m_icon").innerHTML = `<i class="fas ${icons[type] || icons.warning}"></i>`;
+        $("m_title").textContent = title;
+        $("m_msg").textContent = msg;
+        $("m_ok").hidden = lock;
+        const m = $("modal");
+        if (lock) m.dataset.lock = "1"; else delete m.dataset.lock;
+        m.classList.add("open");
+    }
+    function closeModal() { $("modal").classList.remove("open"); }
+    document.addEventListener("keydown", e => {
+        if (e.key !== "Escape") return;
+        if (!$("modal").dataset.lock) closeModal();
+        closeReview();
+    });
+
+    // ================= Animation helpers =================
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function countUp(el, target, duration = 1200) {
+        if (reduceMotion) { el.textContent = fmt(target); return; }
+        const start = performance.now();
+        function step(now) {
+            const p = Math.min((now - start) / duration, 1);
+            el.textContent = fmt(Math.floor((1 - Math.pow(1 - p, 3)) * target));
+            if (p < 1) requestAnimationFrame(step); else el.textContent = fmt(target);
+        }
+        requestAnimationFrame(step);
+    }
+    function initReveal() {
+        if (!("IntersectionObserver" in window)) { document.querySelectorAll(".reveal").forEach(el => el.classList.add("visible")); return; }
+        const io = new IntersectionObserver(entries => entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add("visible"); io.unobserve(e.target); }
+        }), { threshold: 0.08 });
+        document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+        const so = new IntersectionObserver(entries => entries.forEach(e => {
+            if (e.isIntersecting) { countUp(e.target, +e.target.dataset.target, 1400); so.unobserve(e.target); }
+        }), { threshold: 0.5 });
+        document.querySelectorAll(".stat-num[data-target]").forEach(el => so.observe(el));
+    }
+    function updateDeadline() {
+        const days = Math.ceil((DEADLINE - new Date()) / 86400000);
+        $("days_left").textContent = days > 0 ? days : "0";
+    }
+
+    // ================= Startup =================
+    window.addEventListener("DOMContentLoaded", () => {
+        lang = storageGet("skr_lang") === "en" ? "en" : "ms";
+        applyLanguage();
+        const restored = loadDraft();
+        renderDrgList();
+        updateDeadline();
+        initReveal();
+        if (restored) setTimeout(() => showModal(t("draftTitle"), t("draftRestored"), "success"), 300);
+    });
+</script>
+</body>
+</html>
