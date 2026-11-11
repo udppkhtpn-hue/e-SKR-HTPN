@@ -544,27 +544,16 @@
         [31, "Respiratory Infections & Inflammations Except Pneumonia", ["Perubatan Am", "Perubatan Respiratori"]]
     ];
 
-    // Departments shown in the dropdown. `match` = which KKM specialties belong to it.
-    // The value is what gets saved to the sheet, so it stays in Malay.
+    // HTPN's 6 clinical departments. `match` = the KKM "Kepakaran Terlibat" entries each one covers.
+    // HTPN has no separate subspecialty units, so medical subspecialties fold into Perubatan Am and
+    // surgical subspecialties into Pembedahan Am. The value is what gets saved to the sheet.
     const DEPTS = [
-        { v: "Perubatan Am", match: ["Perubatan Am"] },
-        { v: "Perubatan Respiratori", match: ["Perubatan Respiratori"] },
-        { v: "Kardiologi", match: ["Kardiologi"] },
-        { v: "Neurologi", match: ["Neurologi"] },
-        { v: "Gastroenterologi & Hepatologi", match: ["Gastroenterologi & Hepatologi"] },
-        { v: "Hematologi Klinikal", match: ["Hematologi Klinikal"] },
-        { v: "Pembedahan Am", match: ["Pembedahan Am"] },
-        { v: "Pembedahan Upper Gastrointesinal Tract", match: ["Pembedahan Upper Gastrointesinal Tract"] },
-        { v: "Pembedahan Hepatobiliari", match: ["Pembedahan Hepatobiliari"] },
-        { v: "Pembedahan Kolorektal", match: ["Pembedahan Kolorektal"] },
-        { v: "Pembedahan Kardiotorasik", match: ["Pembedahan Kardiotorasik"] },
-        { v: "Pembedahan Plastik", match: ["Pembedahan Plastik"] },
+        { v: "Perubatan Am", match: ["Perubatan Am", "Perubatan Respiratori", "Kardiologi", "Neurologi", "Gastroenterologi & Hepatologi", "Hematologi Klinikal"] },
+        { v: "Pembedahan Am", match: ["Pembedahan Am", "Pembedahan Upper Gastrointesinal Tract", "Pembedahan Hepatobiliari", "Pembedahan Kolorektal", "Pembedahan Plastik", "Pembedahan Kardiotorasik", "Urologi"] },
         { v: "Pembedahan Pediatrik", match: ["Pembedahan Pediatrik"] },
         { v: "Ortopedik", match: ["Ortopedik"] },
         { v: "Obstetrik & Ginekologi", match: ["Obstetrik & Ginekologi"] },
-        { v: "Pediatrik", match: ["Pediatrik", "Pediatrik Am"] },
-        { v: "Otorinolaringologi", match: ["Otorinolaringologi"] },
-        { v: "Urologi", match: ["Urologi"] }
+        { v: "Pediatrik", match: ["Pediatrik", "Pediatrik Am"] }
     ];
 
     // ================= Translations =================
