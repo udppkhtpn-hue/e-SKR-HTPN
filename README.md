@@ -23,9 +23,9 @@ A web form where each HTPN department enters its **estimated monthly referral ca
 1. Create a new Google Sheet, e.g. *SKR HTPN 2027 — Anggaran Kes Rujukan*.
 2. Go to **Extensions → Apps Script**. Delete the sample code and paste in all of `apps-script/Code.gs`. Save.
 3. Choose **`setupSheets`** in the function dropdown and click **Run**. Authorise it with the HIO Google account. This creates `Format KKM`, `Pecahan Jabatan` and `Respons`.
-4. Optional: open **Project Settings (⚙) → Script Properties** and add:
-   - `ACCESS_CODE`: a shared code given to department reps. This blocks random submissions, since the GitHub Pages URL is public.
-   - `NOTIFY_EMAIL`: an address that gets an email on every submission.
+4. Optional: open **Project Settings (⚙) → Script Properties** and add `NOTIFY_EMAIL`, an address that gets an email on every submission.
+
+   There's no login or access code, because the link is shared directly with heads of department. Leave `ACCESS_CODE` **unset**: the form no longer sends a code, so setting it would block every submission.
 5. Go to **Deploy → New deployment → Web app**. Set *Execute as*: **Me**, and *Who has access*: **Anyone**. Deploy, then copy the **Web app URL** (`https://script.google.com/macros/s/…/exec`).
 
 ### 2. Connect the front end

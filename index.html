@@ -374,15 +374,9 @@
                             <label class="field-label" for="p_email"><i class="fas fa-envelope"></i> <span data-i18n="email"></span></label>
                             <input id="p_email" type="email" class="field" maxlength="120" autocomplete="email" placeholder="nama@moh.gov.my" oninput="saveDraft()">
                         </div>
-                        <div class="two">
-                            <div>
-                                <label class="field-label" for="p_phone"><span data-i18n="phone"></span> <span class="opt" data-i18n="optional"></span></label>
-                                <input id="p_phone" type="tel" class="field" maxlength="20" placeholder="01x-xxxxxxx" oninput="saveDraft()">
-                            </div>
-                            <div>
-                                <label class="field-label" for="p_code"><i class="fas fa-key"></i> <span data-i18n="code"></span></label>
-                                <input id="p_code" type="password" class="field" maxlength="40" autocomplete="off" data-i18n-ph="codePh">
-                            </div>
+                        <div>
+                            <label class="field-label" for="p_phone"><i class="fas fa-phone"></i> <span data-i18n="phone"></span> <span class="opt" data-i18n="optional"></span></label>
+                            <input id="p_phone" type="tel" class="field" maxlength="20" placeholder="01x-xxxxxxx" oninput="saveDraft()">
                         </div>
                     </div>
                     <div style="text-align:right;margin-top:14px"><span class="scribble" data-i18n="scribble1"></span></div>
@@ -597,7 +591,6 @@
             name: "Nama Penuh", namePh: "Dr. Nama Pegawai",
             post: "Jawatan", postPh: "Cth: Pakar Perubatan UD54 / KJ",
             email: "E-mel Rasmi", phone: "No. Telefon", optional: "(pilihan)",
-            code: "Kod Akses", codePh: "Daripada HIO",
             scribble1: "isi & semak ✓",
             ribbon02: "02 / Anggaran Kes Sebulan",
             drgTitle: "Anggaran Bilangan Kes Rujukan (Setiap Bulan)",
@@ -657,7 +650,6 @@
             name: "Full Name", namePh: "Dr. Officer Name",
             post: "Position", postPh: "e.g. Physician UD54 / HOD",
             email: "Official Email", phone: "Phone No.", optional: "(optional)",
-            code: "Access Code", codePh: "From HIO",
             scribble1: "fill & check ✓",
             ribbon02: "02 / Monthly Case Estimates",
             drgTitle: "Estimated Referral Cases (Per Month)",
@@ -904,7 +896,7 @@
         if (!/^https:\/\/script\.google\.com\//.test(API_URL)) throw new Error(t("notConfigured"));
         let res;
         try {
-            const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action, code: $("p_code").value.trim() }, params)) });
+            const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action }, params)) });
             res = await r.json();
         } catch (err) {
             throw new Error(t("connError"));
