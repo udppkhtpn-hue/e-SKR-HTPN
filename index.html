@@ -149,6 +149,15 @@
         .dept-info { margin: 14px 0 0; font-size: 12px; min-height: 24px; }
         @media (max-width: 768px) { .dept-grid { grid-template-columns: 1fr; gap: 16px; } .dept-select { font-size: 16px; } }
 
+        /* Submission type picker */
+        .type-opt { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 10px 12px; cursor: pointer; transition: background .15s; }
+        .type-opt + .type-opt { margin-top: 10px; }
+        .type-opt input { accent-color: var(--blue); width: 18px; height: 18px; margin: 2px 0 0; flex-shrink: 0; }
+        .type-opt b { display: block; font-family: var(--display); font-weight: 800; font-size: 13px; text-transform: uppercase; }
+        .type-opt small { display: block; font-size: 10.5px; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+        .type-opt:has(input:checked) { background: var(--field); box-shadow: 4px 4px 0 var(--blue); }
+        .type-pick.invalid .type-opt { box-shadow: 4px 4px 0 var(--red); }
+
         /* Layout: profile + entries */
         .form-grid { display: grid; grid-template-columns: 340px 1fr; gap: 40px; margin-top: 48px; align-items: start; }
         .profile-card { transform: rotate(-.6deg); position: sticky; top: 16px; }
@@ -370,6 +379,13 @@
                         <p class="small" data-i18n="profileSub"></p>
                     </div>
                     <div class="stack">
+                        <div id="p_type" class="type-pick" role="radiogroup">
+                            <div class="field-label"><i class="fas fa-user-check"></i> <span data-i18n="typeLabel"></span></div>
+                            <label class="type-opt"><input type="radio" name="p_type" value="WAKIL" onchange="onTypeChange()">
+                                <span><b data-i18n="typeWakil"></b><small data-i18n="typeWakilSub"></small></span></label>
+                            <label class="type-opt"><input type="radio" name="p_type" value="PAKAR" onchange="onTypeChange()">
+                                <span><b data-i18n="typePakar"></b><small data-i18n="typePakarSub"></small></span></label>
+                        </div>
                         <div>
                             <label class="field-label" for="p_name"><i class="fas fa-id-badge"></i> <span data-i18n="name"></span></label>
                             <input id="p_name" class="field" maxlength="120" autocomplete="name" data-i18n-ph="namePh" oninput="saveDraft()">
@@ -568,10 +584,10 @@
             letterRibbon: "Surat BPP KKM // 6 Nov 2026",
             introKicker: "Permohonan Bahagian Perkembangan Perubatan //",
             introTitle: "Anggaran Potensi Kes Rujukan ke HPUA",
-            introBody: "BPP KKM memohon anggaran bilangan <b>POTENSI</b> kes SETIAP BULAN yang boleh dirujuk dari HTPN ke Hospital Pengajar Universiti Awam (HPUA) di bawah SKR Fasa 1, bagi 31 Diagnosis Related Group (DRG) yang disenarai pendek. Ini adalah unjuran kes yang berpotensi untuk dirujuk — bukan kes yang telah dirujuk. <b>Anggaran dibuat tanpa mengambil kira kos rawatan atau sama ada Surat Jaminan (GL) Kerajaan diperoleh.</b> Setiap pakar mengisi anggaran individu masing-masing — portal akan menjumlahkan semua anggaran terus ke dalam format Google Sheets KKM.",
+            introBody: "BPP KKM memohon anggaran bilangan <b>POTENSI</b> kes SETIAP BULAN yang boleh dirujuk dari HTPN ke Hospital Pengajar Universiti Awam (HPUA) di bawah SKR Fasa 1, bagi 31 Diagnosis Related Group (DRG) yang disenarai pendek. Ini adalah unjuran kes yang berpotensi untuk dirujuk — bukan kes yang telah dirujuk. <b>Anggaran dibuat tanpa mengambil kira kos rawatan atau sama ada Surat Jaminan (GL) Kerajaan diperoleh.</b> Setiap jabatan boleh <b>melantik seorang wakil</b> untuk memberi anggaran bagi keseluruhan jabatan, <b>atau</b> berkongsi pautan ini kepada semua pakar untuk anggaran individu — portal akan menjumlahkan semua serahan terus ke dalam format Google Sheets KKM.",
             daysLeft: "Hari lagi",
             howTitle: "Cara mengisi:",
-            howBody: " (1) Pilih jabatan anda — hanya DRG jabatan tersebut akan dipaparkan. (2) Isi maklumat anda &amp; masukkan <b>anggaran individu anda</b> bagi bilangan potensi kes sebulan yang boleh dirujuk ke HPUA bagi setiap DRG (<b>bukan</b> kes yang telah dirujuk; <b>tanpa mengambil kira kos atau GL</b>). Biarkan kosong jika tiada. (3) Semak &amp; hantar. Jika anda menghantar semula menggunakan <b>e-mel yang sama</b>, serahan baharu akan <b>menggantikan</b> serahan anda yang terdahulu. Tarikh akhir: <b>20 November 2026 (Jumaat)</b>.",
+            howBody: " (1) Pilih jabatan anda — hanya DRG jabatan tersebut akan dipaparkan. (2) Nyatakan sama ada anda <b>Wakil Jabatan</b> (anggaran keseluruhan jabatan) atau <b>Pakar</b> (anggaran individu). <b>Gunakan satu kaedah sahaja bagi setiap jabatan</b> — jika wakil telah menghantar anggaran keseluruhan, pakar dalam jabatan itu tidak perlu menghantar lagi (elak pengiraan berganda). (3) Masukkan anggaran bilangan potensi kes sebulan bagi setiap DRG (<b>bukan</b> kes yang telah dirujuk; <b>tanpa mengambil kira kos atau GL</b>). Biarkan kosong jika tiada. (4) Semak &amp; hantar. Serahan semula dengan <b>e-mel yang sama</b> akan <b>menggantikan</b> serahan anda yang terdahulu. Tarikh akhir: <b>20 November 2026 (Jumaat)</b>.",
             ribbon01: "01 / Pilih Jabatan",
             deptTitle: "Pilih Jabatan Anda",
             deptSub: "Senarai DRG di bawah akan dipaparkan mengikut kepakaran jabatan yang dipilih (lajur \"Kepakaran Terlibat\" dalam jadual KKM). Isi DRG jabatan anda sahaja.",
@@ -580,7 +596,11 @@
             htpnAssigned: "Ditetapkan HTPN",
             ribbon02p: "02 / Maklumat Pengisi",
             profileTitle: "Maklumat Pengisi",
-            profileSub: "Setiap pakar mengisi anggaran individu. E-mel anda digunakan untuk mengenal pasti serahan anda.",
+            profileSub: "E-mel anda digunakan untuk mengenal pasti serahan anda.",
+            typeLabel: "Saya mengisi sebagai",
+            typeWakil: "Wakil Jabatan", typeWakilSub: "Dilantik jabatan — satu anggaran bagi keseluruhan jabatan.",
+            typePakar: "Pakar (individu)", typePakarSub: "Anggaran individu saya sahaja; jumlah jabatan = gabungan semua pakar.",
+            errType: "Sila nyatakan sama ada anda Wakil Jabatan atau Pakar.", thType: "Jenis",
             dept: "Jabatan / Kepakaran",
             deptSelect: "— Pilih jabatan —",
             name: "Nama Penuh", namePh: "Dr. Nama Pakar",
@@ -600,10 +620,10 @@
             total: "Jumlah", thCases: "Potensi Kes / Bulan",
             unfilledWarn: "{n} DRG jabatan anda tidak diisi dan akan direkod sebagai tiada (kosong).",
             sumRibbon: "Ringkasan Langsung", sumTitle: "Ringkasan Anggaran HTPN", sumUpdated: "Dikemaskini:", reload: "Muat Semula",
-            sumSubs: "Pakar Telah Hantar", sumCases: "Jumlah Potensi Kes / Bulan", sumEmpty: "DRG Belum Ada Data",
+            sumSubs: "Serahan Diterima", sumCases: "Jumlah Potensi Kes / Bulan", sumEmpty: "DRG Belum Ada Data",
             sumKkmRibbon: "Format KKM", sumKkmTitle: "Lajur HTPN dalam Format KKM", sumKkmSub: "Jumlah semua serahan aktif — sama seperti yang ditulis ke helaian \"Format KKM\".",
             thSpec: "Kepakaran Terlibat", perMonth: "Bulan",
-            sumDeptRibbon: "Serahan Aktif", sumDeptTitle: "Serahan Setiap Pakar", sumDeptSub: "Hanya serahan terkini bagi setiap pakar (e-mel) dikira. Jumlah HTPN = jumlah anggaran semua pakar.",
+            sumDeptRibbon: "Serahan Aktif", sumDeptTitle: "Serahan Aktif", sumDeptSub: "Hanya serahan terkini bagi setiap e-mel dikira. Jumlah HTPN = jumlah semua serahan. Jangan campur Wakil Jabatan & Pakar dalam satu jabatan.",
             thTime: "Tarikh & Masa", thBy: "Diisi Oleh", noSubs: "Belum ada serahan.",
             loading: "Memuatkan…",
             footerOrg: "Jabatan Kesihatan Negeri Selangor",
@@ -629,10 +649,10 @@
             letterRibbon: "MOH BPP Letter // 6 Nov 2026",
             introKicker: "Request from the Medical Development Division //",
             introTitle: "Estimated Potential Referrals to Public University Hospitals",
-            introBody: "MOH's BPP requests the estimated number of <b>POTENTIAL</b> cases per month that HTPN could refer to the Public University Teaching Hospitals (HPUA) under SKR Phase 1, for the 31 shortlisted Diagnosis Related Groups (DRG). This is a projection of cases that could be referred — not cases already referred. <b>Estimate regardless of treatment cost or whether a government Guarantee Letter (GL) is available.</b> Each specialist enters their own individual estimate — the portal sums all estimates straight into MOH's Google Sheets format.",
+            introBody: "MOH's BPP requests the estimated number of <b>POTENTIAL</b> cases per month that HTPN could refer to the Public University Teaching Hospitals (HPUA) under SKR Phase 1, for the 31 shortlisted Diagnosis Related Groups (DRG). This is a projection of cases that could be referred — not cases already referred. <b>Estimate regardless of treatment cost or whether a government Guarantee Letter (GL) is available.</b> Each department can <b>appoint one representative</b> to give an estimate for the whole department, <b>or</b> share this link with all its specialists for individual estimates — the portal sums every submission straight into MOH's Google Sheets format.",
             daysLeft: "Days left",
             howTitle: "How to fill:",
-            howBody: " (1) Choose your department — only its DRGs are shown. (2) Fill in your details &amp; enter <b>your individual estimate</b> of the number of potential cases per month that could be referred to the HPUA for each DRG (<b>not</b> cases already referred; <b>regardless of cost or GL</b>). Leave blank if none. (3) Review &amp; submit. If you submit again with the <b>same email</b>, the new submission <b>replaces</b> your previous one. Deadline: <b>Friday, 20 November 2026</b>.",
+            howBody: " (1) Choose your department — only its DRGs are shown. (2) State whether you are the <b>Department Representative</b> (whole-department estimate) or a <b>Specialist</b> (individual estimate). <b>Use one method per department</b> — if a representative has submitted the whole-department estimate, that department's specialists should not submit as well (avoids double counting). (3) Enter the estimated number of potential cases per month for each DRG (<b>not</b> cases already referred; <b>regardless of cost or GL</b>). Leave blank if none. (4) Review &amp; submit. Submitting again with the <b>same email</b> <b>replaces</b> your previous submission. Deadline: <b>Friday, 20 November 2026</b>.",
             ribbon01: "01 / Choose Department",
             deptTitle: "Choose Your Department",
             deptSub: "The DRG list below follows the specialty of the department you choose (the \"Kepakaran Terlibat\" column of the MOH table). Fill in your department's DRGs only.",
@@ -641,7 +661,11 @@
             htpnAssigned: "Assigned by HTPN",
             ribbon02p: "02 / Respondent",
             profileTitle: "Respondent Details",
-            profileSub: "Each specialist fills in an individual estimate. Your email identifies your submission.",
+            profileSub: "Your email identifies your submission.",
+            typeLabel: "I am submitting as",
+            typeWakil: "Department Representative", typeWakilSub: "Appointed by the department — one estimate for the whole department.",
+            typePakar: "Specialist (individual)", typePakarSub: "My own estimate only; department total = all specialists combined.",
+            errType: "Please state whether you are the Department Representative or a Specialist.", thType: "Type",
             dept: "Department / Specialty",
             deptSelect: "— Choose department —",
             name: "Full Name", namePh: "Dr. Specialist Name",
@@ -661,10 +685,10 @@
             total: "Total", thCases: "Potential Cases / Month",
             unfilledWarn: "{n} of your department's DRGs are blank and will be recorded as none (empty).",
             sumRibbon: "Live Summary", sumTitle: "HTPN Estimate Summary", sumUpdated: "Updated:", reload: "Reload",
-            sumSubs: "Specialists Submitted", sumCases: "Total Potential Cases / Month", sumEmpty: "DRGs With No Data",
+            sumSubs: "Submissions Received", sumCases: "Total Potential Cases / Month", sumEmpty: "DRGs With No Data",
             sumKkmRibbon: "MOH Format", sumKkmTitle: "HTPN Column in MOH Format", sumKkmSub: "Sum of all active submissions — the same figures written to the \"Format KKM\" sheet.",
             thSpec: "Specialties Involved", perMonth: "Month",
-            sumDeptRibbon: "Active Submissions", sumDeptTitle: "Submissions by Specialist", sumDeptSub: "Only each specialist's (email's) latest submission is counted. HTPN total = sum of all specialists' estimates.",
+            sumDeptRibbon: "Active Submissions", sumDeptTitle: "Active Submissions", sumDeptSub: "Only the latest submission per email is counted. HTPN total = sum of all submissions. Don't mix Representative & Specialist submissions within one department.",
             thTime: "Date & Time", thBy: "Filled By", noSubs: "No submissions yet.",
             loading: "Loading…",
             footerOrg: "Selangor State Health Department",
@@ -804,7 +828,7 @@
     // ================= Draft (per browser) =================
     function saveDraft() {
         storageSet(DRAFT_KEY, JSON.stringify({
-            dept: $("p_dept").value, name: $("p_name").value,
+            dept: $("p_dept").value, type: selectedType(), name: $("p_name").value,
             post: $("p_post").value, email: $("p_email").value, phone: $("p_phone").value,
             notes: $("p_notes").value, allValues
         }));
@@ -817,12 +841,20 @@
         const ids = { name: "p_name", post: "p_post", email: "p_email", phone: "p_phone", notes: "p_notes" };
         Object.keys(ids).forEach(k => { $(ids[k]).value = d[k] || ""; });
         allValues = d.allValues && typeof d.allValues === "object" ? d.allValues : {};
+        const r = d.type && document.querySelector(`input[name="p_type"][value="${d.type === "WAKIL" ? "WAKIL" : "PAKAR"}"]`);
+        if (r) r.checked = true;
         return filledEntries().length > 0;
     }
 
     // ================= Validation + review =================
+    function selectedType() {
+        const r = document.querySelector('input[name="p_type"]:checked');
+        return r ? r.value : "";
+    }
+    function onTypeChange() { $("p_type").classList.remove("invalid"); saveDraft(); }
     function collectProfile() {
         return {
+            type: selectedType(),
             dept: $("p_dept").value,
             name: $("p_name").value.trim(),
             post: $("p_post").value.trim(),
@@ -835,6 +867,7 @@
         const p = collectProfile();
         const checks = [
             ["p_dept", !!currentDept(), "errDept"],
+            ["p_type", !!selectedType(), "errType"],
             ["p_name", p.name.length >= 3, "errName"],
             ["p_post", p.post.length >= 2, "errPost"],
             ["p_email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email), "errEmail"]
@@ -856,7 +889,7 @@
         if (!p) return;
         const f = filledEntries();
         $("review_meta").innerHTML = [
-            [t("dept"), p.dept], [t("name"), p.name], [t("post"), p.post], [t("email"), p.email]
+            [t("dept"), p.dept], [t("typeLabel"), t(p.type === "WAKIL" ? "typeWakil" : "typePakar")], [t("name"), p.name], [t("post"), p.post], [t("email"), p.email]
         ].map(([k, v]) => `<div><b>${esc(k)}</b>${esc(v)}</div>`).join("");
         $("review_body").innerHTML = f.map(e => `<tr><td>${e.no}</td><td>${esc(e.name)}</td><td class="r">${fmt(e.n)}</td></tr>`).join("");
         $("review_total").textContent = fmt(f.reduce((a, e) => a + e.n, 0));
@@ -936,7 +969,7 @@
         $("sum_table_total").textContent = fmt(grand);
         const subs = res.submissions || [];
         $("sum_depts").innerHTML = subs.length ? subs.map(s =>
-            `<tr><td>${esc(s.time)}</td><td><b>${esc(s.dept)}</b></td><td>${esc(s.name)}<br><span class="small">${esc(s.post)}</span></td><td><span class="chip white">${esc(s.id)}</span></td><td class="r">${fmt(s.total)}</td></tr>`
+            `<tr><td>${esc(s.time)}</td><td><b>${esc(s.dept)}</b>${s.type ? `<br><span class="chip ${/Wakil/.test(s.type) ? "ink" : "white"}" style="margin-top:4px">${esc(/Wakil/.test(s.type) ? t("typeWakil") : t("typePakar"))}</span>` : ""}</td><td>${esc(s.name)}<br><span class="small">${esc(s.post)}</span></td><td><span class="chip white">${esc(s.id)}</span></td><td class="r">${fmt(s.total)}</td></tr>`
         ).join("") : `<tr><td colspan="5">${esc(t("noSubs"))}</td></tr>`;
         $("sum_updated").textContent = res.updated || "–";
         countUp($("sum_subs"), subs.length);

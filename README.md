@@ -7,7 +7,11 @@ A web form where each HTPN department enters its **estimated number of potential
 
 ## How the data flows
 
-0. **Who fills it in:** each head of department shares the link with all their specialists. **Every specialist submits their own individual estimate.**
+0. **Who fills it in:** each department chooses **one** of two methods:
+   - **Wakil Jabatan:** appoint one representative who gives an estimate for the whole department.
+   - **Pakar (individu):** the head of department shares the link with all their specialists, and each submits an individual estimate. The department total is all of them combined.
+
+   Each submission records which method was used (the "Jenis Serahan" column in `Respons`).
 1. **01 / Pilih Jabatan:** the specialist picks their department or specialty from a dropdown. The list matches the "Kepakaran Terlibat" column of the KKM table.
 2. **03 / Anggaran Kes:** only the DRGs for that specialty are shown (for example, 13 for Perubatan Am and 5 for O&G). They enter raw numbers (potential cases per month), review them, and submit. Numbers are kept separately for each department, and only the chosen department's DRGs are sent.
 3. Apps Script appends one row per DRG to **`Respons`**, the audit log.
@@ -28,7 +32,7 @@ A web form where each HTPN department enters its **estimated number of potential
 
 \* DRG 18 (ENT infections) is listed only under Otorinolaringologi, and HTPN has no ENT department. HTPN has assigned it to Perubatan Am, Pediatrik and OMFS. The "Format KKM" sheet still shows KKM's original "Kepakaran Terlibat" text.
 
-**Resubmission rule.** Submissions are matched **by email, one per specialist**. If a specialist submits again with the same email, the new submission replaces only their own previous one: the old rows are marked `DIGANTI` and only `AKTIF` rows are counted. Different specialists in the same department are **added together**. `Pecahan Jabatan` shows the totals per department and a **BIL. PAKAR** row counting how many specialists in each department have submitted.
+**Resubmission rule.** Submissions are matched **by email, one per specialist**. If a specialist submits again with the same email, the new submission replaces only their own previous one: the old rows are marked `DIGANTI` and only `AKTIF` rows are counted. Different people in the same department are **added together**. `Pecahan Jabatan` shows the totals per department, a **BIL. PENGISI** row (how many people submitted), and a **KAEDAH** row (which method was used). If a department has both a wakil and individual specialists submitting, the KAEDAH cell shows **⚠ CAMPUR — SEMAK** in red, because the figures would be double-counted. Contact the department and set the duplicate rows to `DIGANTI` in `Respons`, then run **Portal SKR → Kemas kini Format KKM**.
 
 ## Setup (about 10 minutes)
 

@@ -14,10 +14,11 @@
  *   ACCESS_CODE   — if set, the form must send this code
  *   NOTIFY_EMAIL  — if set, an email is sent here on every submission
  *
- * Each specialist submits their own estimate (potential referrals, regardless of cost or GL).
- * Rule: a new submission from the same specialist (same e-mail) marks that specialist's older
- * rows as "DIGANTI" (replaced); only "AKTIF" rows are counted. All specialists' active
- * estimates are summed into the HTPN column.
+ * Estimates are potential referrals, regardless of cost or GL. Each department either appoints a
+ * representative (Wakil Jabatan) for one whole-department estimate, or lets each specialist submit an
+ * individual estimate (Pakar). "Pecahan Jabatan" flags departments that mix both (double counting).
+ * Rule: a new submission from the same person (same e-mail) marks that person's older rows as
+ * "DIGANTI" (replaced); only "AKTIF" rows are counted. All active estimates are summed into HTPN.
  */
 
 const CFG = {
@@ -77,8 +78,9 @@ const DRGS = [
 ];
 
 const RAW_HEADERS = ['Tarikh & Masa', 'ID Serahan', 'Jabatan / Unit', 'Nama', 'Jawatan', 'E-mel', 'No. Telefon',
-  'Bil.', 'Diagnosis Related Group (DRG)', 'Anggaran Kes Sebulan', 'Catatan', 'Status'];
-const COL = { TIME: 0, ID: 1, DEPT: 2, NAME: 3, POST: 4, EMAIL: 5, PHONE: 6, NO: 7, DRG: 8, COUNT: 9, NOTES: 10, STATUS: 11 };
+  'Bil.', 'Diagnosis Related Group (DRG)', 'Anggaran Kes Sebulan', 'Catatan', 'Status', 'Jenis Serahan'];
+const COL = { TIME: 0, ID: 1, DEPT: 2, NAME: 3, POST: 4, EMAIL: 5, PHONE: 6, NO: 7, DRG: 8, COUNT: 9, NOTES: 10, STATUS: 11, TYPE: 12 };
+const TYPES = { WAKIL: 'Wakil Jabatan', PAKAR: 'Pakar (individu)' };
 
 // ============================ Web endpoints ============================
 
@@ -119,8 +121,10 @@ function submit_(req) {
     post: safe(clean(p.post, 120)),
     email: clean(p.email, 120).toLowerCase(),
     phone: safe(clean(p.phone, 20)),
-    notes: safe(String(p.notes == null ? '' : p.notes).trim().slice(0, 1000))
+    notes: safe(String(p.notes == null ? '' : p.notes).trim().slice(0, 1000)),
+    type: TYPES[String(p.type || '').toUpperCase()] || ''
   };
+  if (!profile.type) throw new Error('Sila pilih jenis serahan (Wakil Jabatan / Pakar).');
   if (!profile.dept) throw new Error('Jabatan / unit diperlukan.');
   if (profile.name.length < 3) throw new Error('Nama diperlukan.');
   if (profile.post.length < 2) throw new Error('Jawatan diperlukan.');
@@ -161,7 +165,7 @@ function submit_(req) {
     }
 
     const out = rowsIn.map(([no, drg, n]) => [now, id, profile.dept, profile.name, profile.post, profile.email,
-      profile.phone, no, drg, n, profile.notes, 'AKTIF']);
+      profile.phone, no, drg, n, profile.notes, 'AKTIF', profile.type]);
     sh.getRange(sh.getLastRow() + 1, 1, out.length, RAW_HEADERS.length).setValues(out);
     SpreadsheetApp.flush();
 
@@ -181,8 +185,8 @@ function notify_(id, p, rows, total, replaced) {
   try {
     const lines = rows.map(r => '  ' + r[0] + '. ' + r[1] + ': ' + r[2]).join('\n');
     MailApp.sendEmail(to, '[SKR HTPN] Serahan baharu: ' + p.dept + ' (' + total + ' kes/bulan)',
-      'ID Serahan: ' + id + (replaced ? ' (menggantikan serahan terdahulu pakar ini)' : '') + '\n' +
-      'Jabatan: ' + p.dept + '\nNama: ' + p.name + '\nJawatan: ' + p.post + '\nE-mel: ' + p.email +
+      'ID Serahan: ' + id + (replaced ? ' (menggantikan serahan terdahulu pengisi ini)' : '') + '\n' +
+      'Jenis: ' + p.type + '\nJabatan: ' + p.dept + '\nNama: ' + p.name + '\nJawatan: ' + p.post + '\nE-mel: ' + p.email +
       (p.phone ? '\nTelefon: ' + p.phone : '') + '\n\nAnggaran kes sebulan:\n' + lines +
       '\n\nJumlah: ' + total + (p.notes ? '\n\nCatatan: ' + p.notes : '') +
       '\n\nHelaian: ' + SpreadsheetApp.getActiveSpreadsheet().getUrl());
@@ -197,7 +201,7 @@ function summary_() {
   const agg = aggregate_();
   const subs = Object.keys(agg.subs).map(k => agg.subs[k])
     .sort((a, b) => b.time - a.time)
-    .map(s => ({ id: s.id, dept: s.dept, name: s.name, post: s.post, total: s.total,
+    .map(s => ({ id: s.id, dept: s.dept, name: s.name, post: s.post, type: s.type, total: s.total,
       time: Utilities.formatDate(s.time, CFG.TZ, 'dd/MM/yyyy HH:mm') }));
   return { status: 'SUCCESS', totals: agg.totals, submissions: subs,
     updated: Utilities.formatDate(new Date(), CFG.TZ, 'dd/MM/yyyy HH:mm') };
@@ -207,7 +211,7 @@ function summary_() {
 function aggregate_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ensureRawSheet_(ss);
-  const totals = {}, byDept = {}, subs = {}, deptPeople = {};
+  const totals = {}, byDept = {}, subs = {}, deptPeople = {}, deptTypes = {};
   DRGS.forEach(d => { totals[d[0]] = 0; });
   const last = sh.getLastRow();
   if (last > 1) {
@@ -218,14 +222,15 @@ function aggregate_() {
       totals[no] += n;
       byDept[dept] = byDept[dept] || {};
       (deptPeople[dept] = deptPeople[dept] || {})[String(r[COL.EMAIL]).trim().toLowerCase()] = true;
+      if (r[COL.TYPE]) (deptTypes[dept] = deptTypes[dept] || {})[String(r[COL.TYPE])] = true;
       byDept[dept][no] = (byDept[dept][no] || 0) + n;
       const id = String(r[COL.ID]);
-      if (!subs[id]) subs[id] = { id: id, dept: dept, name: String(r[COL.NAME]), post: String(r[COL.POST]),
+      if (!subs[id]) subs[id] = { id: id, dept: dept, name: String(r[COL.NAME]), post: String(r[COL.POST]), type: String(r[COL.TYPE] || ''),
         time: r[COL.TIME] instanceof Date ? r[COL.TIME] : new Date(r[COL.TIME]), total: 0 };
       subs[id].total += n;
     });
   }
-  return { totals: totals, byDept: byDept, subs: subs, deptPeople: deptPeople };
+  return { totals: totals, byDept: byDept, subs: subs, deptPeople: deptPeople, deptTypes: deptTypes };
 }
 
 // ============================ Sheet builders ============================
@@ -299,33 +304,44 @@ function buildDeptSheet_(ss, agg) {
   const now = Utilities.formatDate(new Date(), CFG.TZ, 'dd/MM/yyyy HH:mm:ss');
 
   sh.getRange(1, 1, 1, 2).setValues([['PECAHAN ANGGARAN KES RUJUKAN SKR MENGIKUT JABATAN — HTPN KAJANG', '']]).setFontWeight('bold');
-  sh.getRange(2, 1).setValue('Dikemaskini: ' + now + '  ·  Jumlah anggaran individu semua pakar · Hanya serahan AKTIF (terkini bagi setiap pakar) dikira.');
+  sh.getRange(2, 1).setValue('Dikemaskini: ' + now + '  ·  Jumlah semua serahan AKTIF (terkini bagi setiap e-mel) · Semak baris KAEDAH: jangan campur Wakil Jabatan & Pakar dalam satu jabatan.');
 
   const header = ['Bil.', 'Diagnosis Related Group (DRG)'].concat(depts, ['JUMLAH HTPN']);
   const rows = DRGS.map(d => [d[0], d[1]].concat(depts.map(k => agg.byDept[k][d[0]] === undefined ? '' : agg.byDept[k][d[0]]), [agg.totals[d[0]] || 0]));
   const totalRow = ['', 'JUMLAH'].concat(depts.map(k => Object.keys(agg.byDept[k]).reduce((a, n) => a + agg.byDept[k][n], 0)),
     [DRGS.reduce((a, d) => a + (agg.totals[d[0]] || 0), 0)]);
-  const peopleRow = ['', 'BIL. PAKAR (SERAHAN AKTIF)'].concat(depts.map(k => Object.keys(agg.deptPeople[k] || {}).length),
+  const peopleRow = ['', 'BIL. PENGISI (SERAHAN AKTIF)'].concat(depts.map(k => Object.keys(agg.deptPeople[k] || {}).length),
     [Object.keys(agg.subs).length]);
-  const table = [header].concat(rows, [totalRow, peopleRow]);
+  const method = k => {
+    const t = agg.deptTypes[k] || {};
+    if (t[TYPES.WAKIL] && t[TYPES.PAKAR]) return '⚠ CAMPUR — SEMAK';
+    if (t[TYPES.WAKIL]) return 'Wakil Jabatan';
+    if (t[TYPES.PAKAR]) return 'Pakar (individu)';
+    return '';
+  };
+  const methodRow = ['', 'KAEDAH'].concat(depts.map(method), ['']);
+  const table = [header].concat(rows, [totalRow, peopleRow, methodRow]);
   sh.getRange(4, 1, table.length, header.length).setValues(table);
   sh.getRange(4, 1, 1, header.length).setFontWeight('bold').setBackground('#111114').setFontColor('#ffd400').setWrap(true);
-  sh.getRange(4 + table.length - 2, 1, 2, header.length).setFontWeight('bold').setBackground('#fff6c2');
+  sh.getRange(4 + table.length - 3, 1, 3, header.length).setFontWeight('bold').setBackground('#fff6c2');
+  depts.forEach((k, i) => {
+    if (method(k).indexOf('CAMPUR') >= 0) sh.getRange(4 + table.length - 1, 3 + i).setBackground('#e10600').setFontColor('#ffffff');
+  });
   sh.getRange(4, 1, table.length, header.length).setBorder(true, true, true, true, true, true);
   sh.getRange(5, header.length, DRGS.length, 1).setFontWeight('bold');
 
   // Active submissions list
   const start = 4 + table.length + 2;
   const subs = Object.keys(agg.subs).map(k => agg.subs[k]).sort((a, b) => b.time - a.time);
-  sh.getRange(start, 1).setValue('SERAHAN AKTIF (SETIAP PAKAR)').setFontWeight('bold');
-  const list = [['Tarikh & Masa', 'ID Serahan', 'Jabatan / Unit', 'Nama', 'Jawatan', 'Jumlah Kes']]
-    .concat(subs.map(s => [Utilities.formatDate(s.time, CFG.TZ, 'dd/MM/yyyy HH:mm'), s.id, s.dept, s.name, s.post, s.total]));
-  sh.getRange(start + 1, 1, list.length, 6).setValues(list);
-  sh.getRange(start + 1, 1, 1, 6).setFontWeight('bold').setBackground('#d9d9d9');
+  sh.getRange(start, 1).setValue('SERAHAN AKTIF').setFontWeight('bold');
+  const list = [['Tarikh & Masa', 'ID Serahan', 'Jabatan / Unit', 'Jenis Serahan', 'Nama', 'Jawatan', 'Jumlah Kes']]
+    .concat(subs.map(s => [Utilities.formatDate(s.time, CFG.TZ, 'dd/MM/yyyy HH:mm'), s.id, s.dept, s.type, s.name, s.post, s.total]));
+  sh.getRange(start + 1, 1, list.length, 7).setValues(list);
+  sh.getRange(start + 1, 1, 1, 7).setFontWeight('bold').setBackground('#d9d9d9');
 
   sh.setColumnWidth(1, 110);
   sh.setColumnWidth(2, 340);
-  for (let c = 3; c <= Math.max(header.length, 6); c++) sh.setColumnWidth(c, 130);
+  for (let c = 3; c <= Math.max(header.length, 7); c++) sh.setColumnWidth(c, 130);
   sh.setFrozenRows(4);
 }
 
@@ -338,6 +354,10 @@ function ensureRawSheet_(ss) {
       .setFontWeight('bold').setBackground('#111114').setFontColor('#ffd400');
     sh.setFrozenRows(1);
     sh.getRange('A:A').setNumberFormat('dd/MM/yyyy HH:mm:ss');
+  } else if (sh.getRange(1, RAW_HEADERS.length).getValue() !== RAW_HEADERS[RAW_HEADERS.length - 1]) {
+    // Existing sheet from an earlier version: add the new "Jenis Serahan" header.
+    sh.getRange(1, RAW_HEADERS.length).setValue(RAW_HEADERS[RAW_HEADERS.length - 1])
+      .setFontWeight('bold').setBackground('#111114').setFontColor('#ffd400');
   }
   return sh;
 }
