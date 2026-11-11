@@ -1,6 +1,6 @@
 # PORTAL SKR HTPN e-RUJUKAN
 
-A web form where each HTPN department enters its **estimated monthly referral cases** to the public university teaching hospitals (PPUM, HSAAS UPM, HTABTAR UKM) for the **31 DRGs** of the Sinergi Kesihatan Rakyat (SKR) 2027 initiative. The request comes from BPP KKM, ref. KKM.600-1/4/20 JLD 8 (27), dated 6 Nov 2026, and the deadline is **20 Nov 2026**.
+A web form where each HTPN department enters its **estimated number of potential cases per month** that could be referred (not cases already referred) to the public university teaching hospitals (PPUM, HSAAS UPM, HTABTAR UKM) for the **31 DRGs** of the Sinergi Kesihatan Rakyat (SKR) 2027 initiative. The request comes from BPP KKM, ref. KKM.600-1/4/20 JLD 8 (27), dated 6 Nov 2026, and the deadline is **20 Nov 2026**.
 
 - **Front end:** `index.html` (one vanilla HTML file, in the same printed-poster UI as PPTUK e-CLINICAL), hosted on GitHub Pages.
 - **Back end:** `apps-script/Code.gs`, a Google Apps Script bound to a Google Sheet.
@@ -8,7 +8,7 @@ A web form where each HTPN department enters its **estimated monthly referral ca
 ## How the data flows
 
 1. **01 / Pilih Jabatan:** the head of department picks their department or specialty from a dropdown. The list matches the "Kepakaran Terlibat" column of the KKM table.
-2. **03 / Anggaran Kes:** only the DRGs for that specialty are shown (for example, 13 for Perubatan Am and 5 for O&G). They enter raw numbers (cases per month), review them, and submit. Numbers are kept separately for each department, and only the chosen department's DRGs are sent.
+2. **03 / Anggaran Kes:** only the DRGs for that specialty are shown (for example, 13 for Perubatan Am and 5 for O&G). They enter raw numbers (potential cases per month), review them, and submit. Numbers are kept separately for each department, and only the chosen department's DRGs are sent.
 3. Apps Script appends one row per DRG to **`Respons`**, the audit log.
 4. It then rebuilds **`Format KKM`**, an exact copy of the KKM template. Column L (*Hospital Tengku Permaisuri Norashikin, Kajang.*) holds the sum of all active submissions. This has been checked cell by cell against `Bil. Kes SKR Hospital KKM - Sheet1.csv` with zero differences.
 5. **`Pecahan Jabatan`** shows the DRG × department breakdown and the list of active submissions.
