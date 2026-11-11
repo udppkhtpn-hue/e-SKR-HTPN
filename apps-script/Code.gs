@@ -122,9 +122,9 @@ function submit_(req) {
     email: clean(p.email, 120).toLowerCase(),
     phone: safe(clean(p.phone, 20)),
     notes: safe(String(p.notes == null ? '' : p.notes).trim().slice(0, 1000)),
-    type: TYPES[String(p.type || '').toUpperCase()] || ''
+    // The form requires this; older cached copies of the form may not send it, so don't reject.
+    type: TYPES[String(p.type || '').toUpperCase()] || 'Tidak dinyatakan'
   };
-  if (!profile.type) throw new Error('Sila pilih jenis serahan (Wakil Jabatan / Pakar).');
   if (!profile.dept) throw new Error('Jabatan / unit diperlukan.');
   if (profile.name.length < 3) throw new Error('Nama diperlukan.');
   if (profile.post.length < 2) throw new Error('Jawatan diperlukan.');
